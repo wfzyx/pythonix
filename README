@@ -1,4 +1,4 @@
-pynix
+pythonix
 =====
 
 Python/Minix based operating system
@@ -13,7 +13,7 @@ The goal is to build an OS with the following characteristics :
 
 Documentation and Resources
 
-* git://git.minix3.org/minix # minix3 src, the basis for the development of Pynix
+* git://git.minix3.org/minix # minix3 src, the basis for the development of Pythonix
 * http://legacy.python.org/dev/peps/pep-0008/ # Style-Guide Python
 
 FAQ
