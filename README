@@ -1,0 +1,44 @@
+pynix
+=====
+
+Python/Minix based operating system
+
+The goal is to build an OS with the following characteristics :
+
+* Availability and reliability
+* Low resource consumption
+* Portability and embedded computing
+* Open-source ( MIT )
+* Easy learning and maintenance
+
+Documentation and Resources
+
+* git://git.minix3.org/minix # minix3 src, the basis for the development of Pynix
+* http://legacy.python.org/dev/peps/pep-0008/ # Style-Guide Python
+
+FAQ
+
+Q: Why develop based on Minix and not on Linux or BSD for example?
+A: Linux already has a highly developed kernel and code base very
+large, and yet can not be a system with fully modular architecture
+due to its monolithic nature, because Minix microkernel nature it's allows
+ease functions to modularize the system , thereby improving the portability
+and kernel security , besides being a project with reduced code base .
+
+Q: Why Python is a good choice to write an OS ?
+A: Because it is a specification that is implemented in several languages, has
+high portability (eg: IronPython , Jython ). In addition to being interpreted
+this eliminates situations like the kernel compile .
+
+Q: A kernel will be slow in a interpreted language ?
+A: Not necessarily , it depends on the implementation and internal optimizations made
+targeting performance , the Python implementation done in Python ( PyPy ) , proved
+achieve a superior performance over the original implementation written in C !
+As seen in : http://speed.pypy.org/
+
+Q: Why Python 3.x ?
+A: Python 2.7 is only justifiable in the days when today has some lib legacy
+or some resource that will be lost if used a version more
+current . In the case of developing an operating system from scratch ,
+literally speaking , it is good practice to always try to use version
+more current Python , and where necessary implement own extensions
