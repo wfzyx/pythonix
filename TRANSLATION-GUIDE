@@ -1,0 +1,34 @@
+Pythonix C/Python Translation-Guide
+
+===================================================================================
+
+Used as a prefix to the name of variables and functions datatype in capital letter 
+and followed by an underline that the variable stores. 
+
+int result -> I_result
+char procname -> C_procname
+char *callname -> S_callname
+
+===================================================================================
+
+Functions and variables of type "static" that are private to the module, state with 
+the convention to prefix with two underscores 
+
+static int try_async(); -> __I_try_async()
+static void enqueue_head(); -> __enqueue_head()
+
+===================================================================================
+
+All the functions treated as pointers, they should take the parameters by value and 
+unpack the results in the proper parameters, except for dictionaries and lists 
+which act as pointers naturally 
+
+static void set_idle_name(char * name, int n) -> def set_idle_name(name,n): ... return name
+set_idle_name(&name,n)  ->  name = set_idle_name(name,n)
+
+===================================================================================
+
+All structs are simple dictionaries in Python, because structs can't take initial values
+in C, a empty dict is enough to do the parity
+
+struct proc * pick_proc -> pick_proc = {}

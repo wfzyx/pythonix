@@ -42,3 +42,8 @@ or some resource that will be lost if used a version more
 current . In the case of developing an operating system from scratch ,
 literally speaking , it is good practice to always try to use version
 more current Python , and where necessary implement own extensions
+
+Q: Why not use ctypes to write functions more accurately to original? 
+A: The purpose of writing the OS in Python, and enables the ease of 
+maintenance is to avoid as much use any kind of dependencies and libraries 
+to non-essential to Python, allowing a clean and easy to understand code.
