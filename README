@@ -15,6 +15,7 @@ Documentation and Resources
 
 * git://git.minix3.org/minix # minix3 src, the basis for the development of Pythonix
 * http://legacy.python.org/dev/peps/pep-0008/ # Style-Guide Python
+* pythonix/TRANSLATION-GUIDE # Guide for C/Python translation
 
 FAQ
 
