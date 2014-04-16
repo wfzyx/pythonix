@@ -1,7 +1,9 @@
 # TODO check include/define dependencies
+# TODO add '-' as alias for stdinput
 
 import sys
 import argparse
+import traceback
 
 def main(argv):
     
@@ -12,20 +14,46 @@ def main(argv):
     # setlocale(LC_ALL, '')
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-b',action='store_true',help='number nonblank output lines')
-    parser.add_argument('-e',action='store_true',help='-e implies -v')
-    parser.add_argument('-f',action='store_true',help='?..')
-    parser.add_argument('-l',action='store_true',help='?..')
-    parser.add_argument('-n',action='store_true',help='number all output lines')
-    parser.add_argument('-s',action='store_true',help='never more than one single blank line')
-    parser.add_argument('-t',action='store_true',help='-t implies -v')
-    parser.add_argument('-v',action='store_true',help='use ^ and M- notation, except for LFD and TAB')
+    parser.add_argument('-b',action='store_true',
+                        help='number nonblank output lines')
+    parser.add_argument('-e',action='store_true',
+                        help='-e implies -v')
+    parser.add_argument('-f',action='store_true',
+                        help='?..')
+    parser.add_argument('-l',action='store_true',
+                        help='?..')
+    parser.add_argument('-n',action='store_true',
+                        help='number all output lines')
+    parser.add_argument('-s',action='store_true',
+                        help='never more than one single blank line')
+    parser.add_argument('-t',action='store_true',
+                        help='-t implies -v')
+    parser.add_argument('-v',action='store_true',
+                        help='use ^ and M- notation, except for LFD and TAB')
+    parser.add_argument('files', nargs=argparse.REMAINDER)
     flags = parser.parse_args()
     
     if len(argv) < 2:
-        print('usage: cat [-beflnstv] [-] [file ...]')
-        exit(0)
-    
+        try:
+            # Behaves like CAT without files #
+            while True:
+                stdin_aux = input()
+                print(stdin_aux)
+        except KeyboardInterrupt:
+            # Hide traceback from end-user # 
+            print()
+            traceback.format_exc()
+
+    # Prints files passed #
+    elif len(flags.files) > 0:
+        try:
+            for i in flags.files:
+                with open(i, 'r') as j:
+                    for x in j.readlines(): 
+                        print(x, end='')
+        except IOError:
+            traceback.format_exc()
+
     if flags.b:
         flags.n = True
     
