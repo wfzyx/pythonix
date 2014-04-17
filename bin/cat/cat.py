@@ -1,5 +1,4 @@
 # TODO check include/define dependencies
-# TODO add '-' as alias for stdinput
 
 import sys
 import argparse
@@ -31,9 +30,20 @@ def main(argv):
     parser.add_argument('-v',action='store_true',
                         help='use ^ and M- notation, except for LFD and TAB')
     parser.add_argument('files', nargs=argparse.REMAINDER)
-    flags = parser.parse_args()
     
-    if len(argv) < 2:
+    argv = parser.parse_args()
+    
+    if argv.b:
+        argv.n = True
+    
+    if argv.e:
+        argv.v = True
+        
+    if argv.t:
+        argv.v = True
+        
+        
+    if not argv.files or (len(argv.files) == 1 and '-' in argv.files):
         try:
             # Behaves like CAT without files #
             while True:
@@ -45,25 +55,32 @@ def main(argv):
             traceback.format_exc()
 
     # Prints files passed #
-    elif len(flags.files) > 0:
+    
+    elif len(argv.files) > 0:
         try:
-            for i in flags.files:
+            for i in argv.files:
                 with open(i, 'r') as j:
-                    for x in j.readlines(): 
-                        print(x, end='')
+                    if argv.n:
+                        xline = 1
+                        if argv.b:
+                            for line in j.readlines(): 
+                                if line.strip():
+                                    fline = '{} {}'.format(xline,line)
+                                    print(fline,end='')
+                                xline += 1
+                        else:
+                            for line in j.readlines(): 
+                                fline = '{} {}'.format(xline,line)
+                                print(fline,end='')
+                                xline += 1
+                    else:
+                        for line in j.readlines(): 
+                            print(line,end='')
+                print('')                          
+                        
         except IOError:
             traceback.format_exc()
 
-    if flags.b:
-        flags.n = True
-    
-    if flags.e:
-        flags.v = True
-        
-    if flags.t:
-        flags.v = True
-    
-    
-    
+            
 if __name__ == '__main__':
     main(sys.argv)
