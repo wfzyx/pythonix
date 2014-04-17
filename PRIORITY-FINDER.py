@@ -1,9 +1,7 @@
-# TODO create priority rules
-# TODO set output to a file
+# IMPORTANT place this program into minix root to search into code base
 
 import re
 import os
-from pprint import pprint
 
 rootdir = os.getcwd()
 finc = r'.*?(\.c|\.h)'
@@ -31,12 +29,27 @@ def lad(path):
         for dir in dirs:
             if dir not in done:
                 done.append(root)
-                lad(dir)
-                
-        
+                lad(dir)  
     
 def main():
     lad(rootdir)
     
 if __name__ == '__main__':
     main()
+    dpen = {}
+    for key in priority:
+        for doc in priority[key]:
+            if doc in dpen:
+                dpen[doc] += 1
+            else:   
+                dpen[doc] = 1
+                
+    priority = []
+    for key in dpen.keys():
+        priority.append((key,dpen[key]))
+        
+    priority = sorted(priority, key=lambda tuple: tuple[1],reverse=True)
+    with open('PRIORITY_LIST','w') as f:
+        for item in priority:
+            line = ' '.join([str(x) for x in item])
+            f.write(line+'\n')
