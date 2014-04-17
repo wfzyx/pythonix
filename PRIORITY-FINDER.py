@@ -1,32 +1,39 @@
-# TODO issue with recursion, max stack limit
-# TODO make function to auto-set priority
+# TODO create priority rules
+# TODO set output to a file
 
 import re
 import os
+from pprint import pprint
 
 rootdir = os.getcwd()
-finc = r'.*?(.c|.h)'
-dexc = r'.git'
+finc = r'.*?(\.c|\.h)'
 priority = {}
+done = ['.git']
 
 def dep(file,root):
     l = []
-    pat = re.compile(r'#include .*?("|>)')
+    pat = re.compile(r'#include ["<].*?[">]', re.MULTILINE)
     f = open(os.path.abspath(root)+'\\'+file,'r').read()
-    l = pat.findall(f)
-    return (file,root,l)
+    l = pat.findall(f)   
+    if l:
+        return l
+    else:
+        return x / 0
 
-def lad(path):   
+def lad(path):
     for root,dirs,files in os.walk(path):
-        dirs = [d for d in dirs if not re.match(dexc,d)]
-        for dir in dirs:
-            lad(dir)       
-        files = [f for f in files if not re.match(finc,f)]
+        files = [f for f in files if re.match(finc,f)]
         for file in files:  
             try:
-                priority = priority[file] = dep(file,root)
+                priority[os.path.abspath(root)[32:]+'\\'+file] = dep(file,root)
             except:
                 pass
+        for dir in dirs:
+            if dir not in done:
+                done.append(root)
+                lad(dir)
+                
+        
     
 def main():
     lad(rootdir)
