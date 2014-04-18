@@ -1,8 +1,18 @@
 # rm. Remove files and/or directories
 
 import sys
+import os
 import argparse
 import traceback
+
+def remove(force=False, interactive=False, recursive=False, files=None):
+    if recursive:
+        if interactive:
+            for i in files:
+                with open(i) as j:
+                    answer = input('rm: remove common file "i"?')
+                    if answer.upper
+    elif 
 
 def main(argv):
 
@@ -29,5 +39,8 @@ def main(argv):
     if argv.R:
         argv.r = True
     
-    if argv.i:
-        pass
+    remove(force=argv.f, interactive=argv.i, 
+           recursive=argv.r, files=argv.files)
+
+if __name__ == '__main__':
+    main(sys.argv)
