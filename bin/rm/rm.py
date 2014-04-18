@@ -1,18 +1,31 @@
 # rm. Remove files and/or directories
+# TODO: Remove use of 'os' module
 
 import sys
 import os
 import argparse
-import traceback
 
 def remove(force=False, interactive=False, recursive=False, files=None):
-    if recursive:
-        if interactive:
-            for i in files:
-                with open(i) as j:
-                    answer = input('rm: remove common file "i"?')
-                    if answer.upper
-    elif 
+    # TODO: implement recursive removal #
+    if interactive and not recursive:
+        for i in files:
+            if os.path.isfile(i):
+                stdin_aux = input('rm: remove commom file "{0}"? '.format(i))
+                if stdin_aux.upper() == 'Y':
+                    os.remove(i)
+            elif os.path.isdir(i):
+                print('rm: {0} "{1}": It\'s a directory'
+                      .format('unable to remove', i))
+            else:
+                print('rm: {0} "{1}": File or directory not found'
+                      .format('unable to remove', i))
+    else:
+        for i in files:
+            if os.path.isfile(i):
+                os.remove(i)
+            else:
+                print('rm: {0} "{1}": It\'s a directory'
+                      .format('unable to remove', i))
 
 def main(argv):
 
@@ -21,10 +34,10 @@ def main(argv):
 
     # Add options #
     parser.add_argument('-i', action='store_true',
-                        help='Ask for confirmation before removing files')
+                        help='Ask for confirmation before removing')
     parser.add_argument('-f', action='store_true',
                         help='Do not ask for confirmation before\
-                              removing files')
+                              removing')
     parser.add_argument('-r', action='store_true',
                         help='Remove recursively')
     # Same as -r #
