@@ -1,15 +1,10 @@
-# rm. Remove files and/or directories
-<<<<<<< HEAD
-# TODO: remove use of 'os' module
-=======
+# rm: simple program to delete files and directories
 # TODO: Remove use of 'os' module
->>>>>>> 2ccd8ab8390da5a0593722c71c5e1c2697d92f88
 
 import sys
 import os
 import argparse
 
-<<<<<<< HEAD
 def remove(files, force=False, interactive=False, recursive=False):
     if recursive and interactive:
         for i in files:
@@ -44,29 +39,6 @@ def remove(files, force=False, interactive=False, recursive=False):
                 os.rmdir(i)
             else:
                 os.rmdir(i)
-=======
-def remove(force=False, interactive=False, recursive=False, files=None):
-    # TODO: implement recursive removal #
-    if interactive and not recursive:
-        for i in files:
-            if os.path.isfile(i):
-                stdin_aux = input('rm: remove commom file "{0}"? '.format(i))
-                if stdin_aux.upper() == 'Y':
-                    os.remove(i)
-            elif os.path.isdir(i):
-                print('rm: {0} "{1}": It\'s a directory'
-                      .format('unable to remove', i))
-            else:
-                print('rm: {0} "{1}": File or directory not found'
-                      .format('unable to remove', i))
-    else:
-        for i in files:
-            if os.path.isfile(i):
-                os.remove(i)
-            else:
-                print('rm: {0} "{1}": It\'s a directory'
-                      .format('unable to remove', i))
->>>>>>> 2ccd8ab8390da5a0593722c71c5e1c2697d92f88
 
 def main(argv):
 
