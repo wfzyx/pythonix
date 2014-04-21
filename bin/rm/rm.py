@@ -1,18 +1,44 @@
 # rm. Remove files and/or directories
+# TODO: remove use of 'os' module
 
 import sys
 import os
 import argparse
-import traceback
 
-def remove(force=False, interactive=False, recursive=False, files=None):
-    if recursive:
-        if interactive:
-            for i in files:
-                with open(i) as j:
-                    answer = input('rm: remove common file "i"?')
-                    if answer.upper
-    elif 
+def remove(files, force=False, interactive=False, recursive=False):
+    if recursive and interactive:
+        for i in files:
+            if os.path.isdir(i) and not i.endswith('/'):
+                i += '/'
+            if os.path.isfile(i):
+                answer = input('rm: remove common file "{0}"? '.format(i))
+                if answer.upper() == 'Y':
+                    os.remove(i)
+            elif os.path.isdir(i) and len(os.listdir(i)) > 0:
+                answer = input('rm: descent into directory "{0}"? '.format(i))
+                if answer.upper() == 'Y':
+                    subdir = [''.join([i,x]) for x in os.listdir(i)]
+                    remove(subdir, force=force,
+                           interactive=interactive, recursive=recursive)
+                    answer = input('rm: remove directory "{0}"? '.format(i))
+                    if answer.upper() == 'Y':
+                        os.rmdir(i)
+            else:
+                answer = input('rm: remove directory "{0}"? '.format(i))
+                os.rmdir(i)
+    elif recursive:
+        for i in files:
+            if os.path.isdir(i) and not i.endswith('/'):
+                i += '/'
+            if os.path.isfile(i):
+                os.remove(i)
+            elif os.path.isdir(i) and len(os.listdir(i)) > 0:
+                subdir = [''.join([i,x]) for x in os.listdir(i)]
+                remove(subdir, force=force,
+                       interactive=interactive, recursive=recursive)
+                os.rmdir(i)
+            else:
+                os.rmdir(i)
 
 def main(argv):
 
@@ -38,9 +64,12 @@ def main(argv):
     # If -R is passed, then -r is set to True #
     if argv.R:
         argv.r = True
-    
-    remove(force=argv.f, interactive=argv.i, 
-           recursive=argv.r, files=argv.files)
+
+
+    if len(argv.files) == 0:
+        print('Usage: rm [OPTIONS] FILES')
+
+    remove(argv.files, force=argv.f, interactive=argv.i, recursive=argv.r)
 
 if __name__ == '__main__':
     main(sys.argv)
