@@ -20,7 +20,9 @@ def __set_idle_name(name, n):
             i += 1
         c = c // 10
     
-
+PICK_ANY = 1
+PICK_HIGHERONLY = 2
+    
 def BuildNotifyMessage(m_ptr,src,dst_ptr):
     m_ptr['m_type'] = NOTIFY_MESSAGE
     m_ptr['NOTIFY_TIMESTAMP'] = get_monotonic()
