@@ -32,6 +32,7 @@ def proc_init():
     sp = {}
 
     rp = BEG_PROC_ADDR
+    i = NR_TASKS * -1
 
     while rp < END_PROC_ADDR:
         rp += 1
@@ -117,5 +118,3 @@ def __idle():
                 arch_pause()
             interrupts_disable()
             v = 0
-	}
-    }
