@@ -93,7 +93,7 @@ def kmain(local_cbi={}):
     DEBUGEXTRA('main()')
     proc_init()
     
-    if(NR_BOOT_MODULES != kinfo['mbi']['mods_count'])
+    if(NR_BOOT_MODULES != kinfo['mbi']['mods_count']):
         panic('expecting {} boot processes/modules, found {}'.format(
                 NR_BOOT_MODULES, kinfo['mbi']['mods_count']))
                 
@@ -111,7 +111,118 @@ def kmain(local_cbi={}):
             ip['start_addr'] = mb_mod['mod_start']
             # TODO check if this can be done with len()
             ip['len'] = mb_mod['mob_end'] - mb_mod['mb_start']
-        
-        
     
-#if __name__ == '__main__':
+    reset_proc_accounting(rp)
+    
+    ''' See if this process is immediately schedulable.
+	 In that case, set its privileges now and allow it to run.
+	 Only kernel tasks and the root system process get to run immediately.
+	 All the other system processes are inhibited from running by the
+	 RTS_NO_PRIV flag. They can only be scheduled once the root system
+	 process has set their privileges.
+	'''
+        
+    proc_nr = proc_nr(rp)
+    schedulable_proc = (iskernelln(proc_nr) or isrootsysn(proc_nr) or\
+        proc_nr = VM_PROC_NR)
+    
+    if(schedulable_proc):
+        get_priv(rp,static_priv_id(proc_nr))
+        # Privileges for kernel tasks
+        if(proc_nr == VM_PROC_NR):
+            # TODO Check this priv(rp)
+            # priv(rp)->s_flags = VM_F
+            # priv(rp)->s_trap_mask = SRV_T
+            # priv(rp)-> s_sig)mgr = SELF
+            ipc_to_m = SRV_M
+            kcall = SRV_KC
+            rp['p_priority'] = SRV_Q
+            rp['p_quantum_size_ms'] = SRV_QT
+        elif(iskernelln(proc_nr)):
+            # TODO Check this priv(rp)
+            # priv(rp)->s_flags = (IDL_F if proc_nr == IDLE else TSK_F)
+            # priv(rp)->s_trap_mask = CSK_T if proc_nr == CLOCK \
+            #   proc_nr == SYSTEM else TSK_T
+            ipc_to_m = TSK_M # Allowed targets
+            kcalls = TSK_KC  # Allowed kernel calls
+        else:
+            assert(isrootsysn(proc_nr))
+            # TODO Check this priv(rp)
+            # priv(rp)['sflags'] = RSYS_F       # priv flags
+            # priv(rp)['s_trap_mask'] = SRV_T   # allowed traps
+            ipc_to_m = SRV_M                    # allowed targets
+            kcalls = SRV_KC                     # allowed kcalls
+            # priv(rp)['s_sig_mgr'] = SRV_SM    # sign manager
+            rp['p_priority'] = SRV_Q            # priority queue
+            rp['p_quantum_size_ms'] = SRV_QT    # quantum size
+            
+        # TODO check the entire next block
+        '''map = '0'*len(map)
+        if(ipc_to_m == ALL_M):
+            for j in range(NR_SYS_PROCS):
+                set_sys_bit(map,j)
+        
+        fill_sendto_mask(rp,map)
+        for j in range(SYS_CALL_MASK_SIZE):
+            # WTF this line
+            priv(rp)['s_k_call_mask']['j'] = 0 if kcall == NO_C else (~0)
+        
+        '''
+    else:
+        # Block process from running
+        RTS_SET(rp,RTS_NO_PRIV | RTS_NO_QUANTUM)
+    
+    # Arch specific state initialization
+    arch_boot_proc(ip,rp)
+    
+    # scheduing functions depend on proc_ptr pointing somewhere
+    if not get_cpulocal_var(proc_ptr):
+        get_cpulocal_var(proc_ptr) = rp
+        
+    # process isn't scheduled until VM has set up a pagetable for it
+    if rp['p_nr'] != VM_PROC_NR AND rp['p_nr'] >= 0:
+        rp['p_rts_flags'] |= RTS_VMINHIBIT
+        rp['p_rts_flags'] |= RTS_BOOTINHIBIT
+    
+    rp['p_rts_flags'] |= RTS_PROC_STOP
+    rp['p_rts_flags'] &= ~RTS_SLOT_FREE
+    DEBUGEXTRA('done')
+    
+    kinfo['boot_procs'] = image
+    
+    for n in [SEND,RECEIVE,SENDREC,NOTIFY,SENDNB,SENDA]:
+        assert(n >= 0 and n <= IPCNO_HIGHEST)
+        assert(not ipc_call_names[n])
+        # TODO check # operator
+        #ipc_call_names[n] = #n
+    
+    # System and processes initialization
+    memory_init()
+    DEBUGEXTRA('system_init()...')
+    system_init()
+    DEBUGEXTRA('done')
+    
+    # The bootstrap phase is over, so we can add the physical
+    # memory used for ir to the free list
+    # TODO Check this
+    # add_memmap()
+            
+    if CONFIG_SMP:
+        if config_no_apic:
+            BOOT_VERBOSE(print('APIC disabled, disables SMP, using legact PIC'))
+            smp_single_cpu_fallback()
+        elif config_no_smp:
+            BOOT_VERBOSE(print('SMP disabled, using legacy'))
+            smp_single_cpu_fallback
+        else:
+            smp_init()
+            bsp_finish_booting()
+    else:
+        ''' 
+        if configured for a single CPU, we are already on the kernel stack which we
+        are going to use everytime we execute kernel code. We finish booting and we
+        never return here
+        '''
+        bsp_finish_booting()
+        
+if __name__ == '__main__':
