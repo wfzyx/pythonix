@@ -25,13 +25,13 @@ def __set_idle_name(name, n):
         c = c//10
     name = ''.join([name, '\0'])
 
+
 # TODO: Check depenencies #
 def proc_init():
     rp = {}
     sp = {}
 
     rp = BEG_PROC_ADDR
-    i = -NR_TASKS
 
     while rp < END_PROC_ADDR:
         rp += 1
@@ -74,17 +74,12 @@ def proc_init():
         __set_idle_name(ip['p_name'], i)
         i += 1
 
-# TODO: Implement this function using "#ifdef" equivalent code #
-def __switch_address_space_idle():
-    # C code for translation: #
-    '''
-    #ifdef CONFIG_SMP
-        switch_address_space(proc_addr(VM_PROC_NR))
-    #endif
-    '''
-    pass
 
-# TODO: Implement part of this function using "#ifdef" equivalent code #
+def __switch_address_space_idle():
+    if CONFIG_SMP:
+        switch_address_space(proc_addr(VM_PROC_NR))
+
+
 def __idle():
     p = {}
 
@@ -99,39 +94,28 @@ def __idle():
     if priv(p)['s_flags'] & BILLABLE:
         get_cpulocal_var(bill_ptr) = p
 
-    switch_address_space_idle()
+    __switch_address_space_idle()
 
-    # C code for translation: #
-    '''
-    #ifdef CONFIG_SMP
-	get_cpulocal_var(cpu_is_idle) = 1;
-	if (cpuid != bsp_cpu_id)
-		stop_local_timer();
-	else
-    #endif
-    {
-        restart_local_timer();
-    }
-    '''
+    if CONFIG_SMP:
+        get_cpulocal_var(cpu_is_idle) = 1
+        if cpuid != bsp_cpu_id:
+            stop_local_timer()
+        else:
+            restart_local_timer()
 
     contex_stop(proc_addr(KERNEL))
 
-    # C code for translation #
-    '''
-    #if !SPROFILE
-        halt_cpu();
-    #else
-        if (!sprofiling)
-            halt_cpu();
-        else {
-            volatile int * v;
-            v = get_cpulocal_var_ptr(idle_interrupted);
-            interrupts_enable();
-            while (!*v)
-                arch_pause();
-            interrupts_disable();
-            *v = 0;
+    if not SPROFILE:
+        halt_cpu()
+    else:
+        if not sprofiling:
+            halt_cpu()
+        else:
+            v = get_cpulocal_var_ptr(idle_interrupted)
+            interrupts_enable()
+            while not v:
+                arch_pause()
+            interrupts_disable()
+            v = 0
 	}
-    #endif
     }
-    '''
