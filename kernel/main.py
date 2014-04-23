@@ -67,10 +67,7 @@ def bsp_finish_booting():
 
 
     
-def kmain(local_cbi={}):
-    ip = {}
-    rp = {}
-    
+def kmain(local_cbi={}):    
     # TODO check if this is really necessary
     kinfo = local_cbi
     kmess = kinfo['kmess']
@@ -205,7 +202,7 @@ def kmain(local_cbi={}):
     # The bootstrap phase is over, so we can add the physical
     # memory used for ir to the free list
     # TODO Check this
-    # add_memmap()
+    # kinfo = add_memmap()
             
     if CONFIG_SMP:
         if config_no_apic:
@@ -224,5 +221,87 @@ def kmain(local_cbi={}):
         never return here
         '''
         bsp_finish_booting()
+
+def __announce():   
+    print('''
+    PYTHONIX
+    Join us to make Pythonix better...
+    https://github.com/vhpanisa/pythonix'''
+    )
+
+def prepare_shutdown(how):
+    print('PYTHONIX will now shutdown...')
+    # TODO Check tmr_arg functions
+    # tmr_arg(&shutdown_timer)->ta_int = how;
+    shutdown_timer = set_timer(shutdown_timer, \
+    get_monotonic() + system_hz, pythonix_shutdown)
+    
+def pythonix_shutdown(tp):
+    '''This function is called from prepare_shutdown or stop_sequence to bring 
+    down MINIX. How to shutdown is in the argument: RBT_HALT (return to the
+    monitor), RBT_RESET (hard reset). 
+    '''
+    if CONFIG_SMP:
+    # MXCM #
+    '''FIXME
+    we will need to stop timers on all cpus if SMP is enabled and put them in
+    such a state that we can perform the whole boot process once restarted from
+    monitor again
+    '''
+        if ncpus > 1:
+            smp_shutdown_aps()
+            
+    hw_intr_disable_all()
+    stop_local_timer()
+    # TODO check tmr_arg AGAIN
+    how = tmr_arg(tp)['ta_int'] if tp else RBT_PANIC
+    
+    direct_cls()
+    if how == RBT_HALT:
+        direct_print('PYTHONIX has halted, you could turn off your computer')
+    elif how == RBT_POWEROFF:
+        direct_print('PYTHONIX has halted and will now power off.')
+    else:
+        direct_print('PYTHONIX will now reset.')
         
+    arch_shutdown(how)
+    
+    
+def cstart():
+    '''Perform system initializations prior to calling main().
+    Most settings are determined with help of the environment
+    strings passed by PYTHONIX loader.
+    '''
+    
+    # low_level initialization
+    prot_init()
+    
+    # determine verbosity
+    if value = env_get(VERBOSEBOOTVARNAME):   
+        verboseboot = int(value)
+        
+    # Get clock tick frequency
+    value = env_get('hz')
+    if value:
+        system_hz = str(value)
+    if not value || system_hz < 2 || system_hz > 50000 #sanity check
+        system_hz = DEFAULT_HZ
+        
+    
+    DEBUGEXTRA('cstart')
+    
+    # Record misc info for u-space server proc
+    kinfo['nr_procs'] = NR_PROCS
+    kinfo['nr_tasks'] = NR_TASKS
+    kinfo['release'] = OS_RELEASE
+    kinfo['version'] = OS_VERSION
+    
+    
+    # Load average data initialization
+    kloadinfo['proc_last_load'] = 0
+    for h in range(_LOAD_HISTORY):
+        kloadinfo['proc_load_history'][h] = 0
+    
+    
+    
 if __name__ == '__main__':
