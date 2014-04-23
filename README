@@ -17,8 +17,7 @@ Documentation and Resources
 * git://git.minix3.org/minix # minix3 src, the basis for the development of Pythonix
 * http://legacy.python.org/dev/peps/pep-0008/ # Style-Guide Python
 * http://wiki.osdev.org/Main_Page # wiki for helping in OS development
-* pythonix/TRANSLATION-GUIDE # Guide for C/Python translation
-
+* docs/TRANSLATION-GUIDE # Guide for C/Python translation
 
 FAQ
 
@@ -47,6 +46,8 @@ targeting performance , the Python implementation done in Python ( PyPy ) , prov
 achieve a superior performance over the original implementation written in C,
 and in some cases, even faster than C!
 As seen in : http://speed.pypy.org/
+Or: http://morepypy.blogspot.com.br/2011/02/pypy-faster-than-c-on-carefully-crafted.html
+Or: http://morepypy.blogspot.com.br/2011/08/pypy-is-faster-than-c-again-string.html
 
 Q: Why Python 3.x ?
 A: Python 2.7 is only justifiable when a project has some lib legacy
