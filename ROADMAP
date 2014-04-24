@@ -1,9 +1,9 @@
 ROADMAP
 
 1 - Translate /kernel to Python3 - Started
-  1.1 - Initially *.c files (main.c, proc.c, profile.c.... ) - In Progress
+  1.1 - Initially *.c files (clock, interrupt, ipc, vm, system, main, proc) - In Progress
   1.2 - Search for dependencies and solve TODO to run *.py files - Waiting
-  1.3 - Make units test, and make kernel run withot panic - Waiting
+  1.3 - Make units test, and make kernel run without panic - Waiting
   
 2 - Translate /drivers to Python3
 3 - With LLVM/Clang/PyPy/ASM make a boot/JIT environment

@@ -1,6 +1,13 @@
+''' This file contains the main program of PYTHONIX as well as its shutdown 
+    code. The routine main() initializes the system and starts the ball
+    rolling by setting up the process table, interrupt vectors, and scheduling
+    each task to run to initialize itself.
+    The routine shutdown() does the opposite and brings down PYTHONIX. 
+    The entries into this file are:
+    main:	    	PYTHONIX main program
+    prepare_shutdown:	prepare to take PYTHONIX down'''
+
 # TODO check dependencies
-
-
 def bsp_finish_booting():
     if SPOFILE:
         sprofiling = 0
@@ -13,7 +20,7 @@ def bsp_finish_booting():
     krandom['random_sources'] = RANDOM_SOURCES
     krandom['random_elements'] = RANDOM_ELEMENTS
     
-    # MINIX is now ready. All boot image processes are on the ready queue.
+    # PYTHONIX is now ready. All boot image processes are on the ready queue.
     # Return to the assembly code to start running the current process.
     
     
@@ -221,6 +228,8 @@ def kmain(local_cbi={}):
         never return here
         '''
         bsp_finish_booting()
+    
+    return local_cbi
 
 def __announce():   
     print('''
@@ -238,7 +247,7 @@ def prepare_shutdown(how):
     
 def pythonix_shutdown(tp):
     '''This function is called from prepare_shutdown or stop_sequence to bring 
-    down MINIX. How to shutdown is in the argument: RBT_HALT (return to the
+    down PYTHONIX. How to shutdown is in the argument: RBT_HALT (return to the
     monitor), RBT_RESET (hard reset). 
     '''
     if CONFIG_SMP:
@@ -265,6 +274,8 @@ def pythonix_shutdown(tp):
         direct_print('PYTHONIX will now reset.')
         
     arch_shutdown(how)
+    
+    return tp
     
     
 def cstart():
@@ -302,6 +313,51 @@ def cstart():
     for h in range(_LOAD_HISTORY):
         kloadinfo['proc_load_history'][h] = 0
     
+    if USE_APIC:
+        value = env_get('no_apic')
+        if(value):
+            config_no_apic = int(value)
+        else:
+            config_no_apic = 1
+        
+        value = env_get('apic_timer_x')
+        if(value):
+            config_apic_timer_x = int(value)
+        else:
+            config_apic_timer_x = 1
     
+    if USE_WATCHDOG:
+        value = env_get(watchdog)
+        if(value)
+            watchdog_enabled = int(value)
     
-if __name__ == '__main__':
+    if CONFIG_SMP:
+        if(config_no_apic):
+            config_no_smp = 1
+        value = env_get('no_smp')
+        if(value):
+            config_no_smp = int(value)
+        else:
+            config_no_smp = 0
+    
+    intr_init(0)
+    arch_init()
+    
+def get_value(params,name):
+    # TODO write this function when boot monitor params are ready
+    # Get environment value - kernel version of 
+    # getenv to avoid setting up the usual environment array.
+    return None
+    
+def env_get(name):
+    return get_value(kinfo['param_buf'],name)
+
+def cpu_print_freq(cpu):
+    freq = cpu_get_freq(cpu)
+    #TODO check div64u
+    print('CPU {} freq {} MHz'.format(cpu,freq))
+    
+def is_fpu():
+    return get_cpulocal_var(fpu_presence)
+    
+#if __name__ == '__main__':   
