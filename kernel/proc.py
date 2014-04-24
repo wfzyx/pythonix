@@ -150,13 +150,11 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
         call_nr < 0 or
         call_nr > IPCNO_HIGHEST or
         call_nr >= 32 or
-        # TODO: Check this next line #
         callname != ipc_call_names[call_nr]
     ):
         if DEBUG_ENABLE_IPC_WARNINGS:
-            print('{0}: trap {1} {6}, {2} {3}, {4} {5}'
-                  .format('sys_call', call_nr, 'caller', proc_nr(caller_ptr),
-                          'src_dst', src_dst_e, 'not_allowed'))
+            print('sys_call: trap {} not_allowed, caller {}, src_dst {}' \
+                  .format(call_nr, proc_nr(caller_ptr), src_dst_e)
         return ETRAPDENIED
 
     if src_dst_e == ANY:
@@ -164,10 +162,9 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
             return EINVAL
         src_dst_p = int(src_dst_e)
     else:
-        # TODO: Check if this pointer was supposed #
-        # to be translated like this #
         if not isokendpt(src_dst_e, src_dst_p):
             return EDEADSRCDST
+
         # MXCM #
         ''' If the call is to send to a process, i.e., for SEND, SENDNB,
         SENDREC or NOTIFY, verify that the caller is allowed to send to
@@ -175,9 +172,9 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
         if call_nr != RECEIVE:
             if not may_send_to(caller_ptr, src_dst_p):
                 if DEBUG_ENABLE_IPC_WARNINGS:
-                    print('sys_call: ipc mask denied {0} from {1} to {2}'
+                    print('sys_call: ipc mask denied {} from {} to {}'\
                           .format(callname, caller_ptr['p_endpoint'],
-                                  src_dst_e))
+                          src_dst_e)                          
                 return ECALLDENIED
 
     # MXCM #
@@ -187,39 +184,35 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
 
     if not priv(caller_ptr)['s_trap_mask'] & (1 << call_nr):
         if DEBUG_ENABLE_IPC_WARNINGS:
-            print('sys_call: ipc mask denied {0} from {1} to {2}'
+            print('sys_call: ipc mask denied {} from {} to {}'\
                   .format(callname, caller_ptr['p_endpoint'], src_dst_e))
         return ETRAPDENIED
 
     if call_nr != SENDREC and call_nr != RECEIVE and iskerneln(src_dst_p):
         if DEBUG_ENABLE_IPC_WARNINGS:
-            print('sys_call: ipc mask denied {0} from {1} to {2}'
+            print('sys_call: ipc mask denied {} from {} to {}'\
                   .format(callname, caller_ptr['p_endpoint'], src_dst_e))
         return ETRAPDENIED
 
     if call_nr == SENDREC:
         caller_ptr['p_misc_flags'] |= MF_REPLY_PEND
+        # TODO tweak logic to swcase fall
     elif call_nr == SEND:
         result = mini_send(caller_ptr, src_dst_e, m_ptr, 0)
-        if call_nr == SEND or result != OK:
-         # TODO: Check how to make this break #
-            break
+        if call_nr == SEND or result != OK:        
+        # TODO tweak logic to swcase break
+        # TODO tweak logic to swcase fall
     elif call_nr == RECEIVE:
+        # TODO tweak logic to swcase recheck
         caller_ptr['p_misc_flags'] &= ~MF_REPLY_PEND
         IPC_STATUS_CLEAR(caller_ptr)
         result = mini_receive(caller_ptr, src_dst_e, m_ptr, 0)
-        # TODO: Check how to make this break #
-        break
     elif call_nr == NOTIFY:
         result = mini_notify(caller_ptr, src_dst_e)
-        # TODO: Check how to make this break #
-        break
     elif call_nr == SENDNB:
         result = mini_send(caller_ptr, src_dst_e, m_ptr, NON_BLOCKING)
-        # TODO: Check how to make this break #
-        break
     else:
         result = EBADCALL
 
-    # Resturn the result of system call to the caller #
+    # Return the result of system call to the caller #
     return result
