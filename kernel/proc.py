@@ -21,6 +21,8 @@ def __set_idle_name(name, n):
             i += 1
         c = c // 10
 
+    return name
+
 PICK_ANY = 1
 PICK_HIGHERONLY = 2
 
@@ -94,12 +96,15 @@ def __idle():
     Halt the CPU, and measure how many timestamp counter ticks are
     spent not doing anything. This allows test setups to measure
     the CPU utilization of certain workloads with high precision.'''
-    p = get_cpulocal_var(proc_ptr) = get_cpulocal_var_ptr(idle_proc)
+
+    get_cpulocal_var(proc_ptr) = get_cpulocal_var_ptr(idle_proc)
+    p = get_cpulocal_var_ptr(idle_proc)
 
     if priv(p)['s_flags'] & BILLABLE:
         get_cpulocal_var(bill_ptr) = p
 
     __switch_address_space_idle()
+
     if not CONFIG_SMP:
         restart_local_timer()
     else:
@@ -109,7 +114,7 @@ def __idle():
         else:
             restart_local_timer()
 
-    # start accounting for the idle time
+    # Start accounting for the idle time #
     context_stop(proc_addr(KERNEL))
     if not SPROFILE:
         halt_cpu()
@@ -125,3 +130,96 @@ def __idle():
             v = 0
     ''' End of accounting for the idle task does not happen here, the kernel
     is handling stuff for quite a while before it gets back here!'''
+
+
+# TODO: Translate switch_to_user() #
+def switch_to_user():
+    pass
+
+
+# Handler for all synchronous IPC calls #
+def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
+    # MXCM #
+    '''Check destination. RECEIVE is the only call that accepts ANY (in
+    addition to a real endpoint). The other calls (SEND, SENDREC, and NOTIFY)
+    require an endpoint to corresponds to a process. In addition, it is
+    necessary to check whether a process is allowed to send to a given
+    destination.'''
+
+    if (
+        call_nr < 0 or
+        call_nr > IPCNO_HIGHEST or
+        call_nr >= 32 or
+        # TODO: Check this next line #
+        callname != ipc_call_names[call_nr]
+    ):
+        if DEBUG_ENABLE_IPC_WARNINGS:
+            print('{0}: trap {1} {6}, {2} {3}, {4} {5}'
+                  .format('sys_call', call_nr, 'caller', proc_nr(caller_ptr),
+                          'src_dst', src_dst_e, 'not_allowed'))
+        return ETRAPDENIED
+
+    if src_dst_e == ANY:
+        if call_nr != RECEIVE:
+            return EINVAL
+        src_dst_p = int(src_dst_e)
+    else:
+        # TODO: Check if this pointer was supposed #
+        # to be translated like this #
+        if not isokendpt(src_dst_e, src_dst_p):
+            return EDEADSRCDST
+        # MXCM #
+        ''' If the call is to send to a process, i.e., for SEND, SENDNB,
+        SENDREC or NOTIFY, verify that the caller is allowed to send to
+        the given destination.'''
+        if call_nr != RECEIVE:
+            if not may_send_to(caller_ptr, src_dst_p):
+                if DEBUG_ENABLE_IPC_WARNINGS:
+                    print('sys_call: ipc mask denied {0} from {1} to {2}'
+                          .format(callname, caller_ptr['p_endpoint'],
+                                  src_dst_e))
+                return ECALLDENIED
+
+    # MXCM #
+    ''' Check if the process has privileges for the requested call.
+    Calls to the kernel may only be SENDREC, because tasks always
+    reply and may not block if the caller doesn't do receive().'''
+
+    if not priv(caller_ptr)['s_trap_mask'] & (1 << call_nr):
+        if DEBUG_ENABLE_IPC_WARNINGS:
+            print('sys_call: ipc mask denied {0} from {1} to {2}'
+                  .format(callname, caller_ptr['p_endpoint'], src_dst_e))
+        return ETRAPDENIED
+
+    if call_nr != SENDREC and call_nr != RECEIVE and iskerneln(src_dst_p):
+        if DEBUG_ENABLE_IPC_WARNINGS:
+            print('sys_call: ipc mask denied {0} from {1} to {2}'
+                  .format(callname, caller_ptr['p_endpoint'], src_dst_e))
+        return ETRAPDENIED
+
+    if call_nr == SENDREC:
+        caller_ptr['p_misc_flags'] |= MF_REPLY_PEND
+    elif call_nr == SEND:
+        result = mini_send(caller_ptr, src_dst_e, m_ptr, 0)
+        if call_nr == SEND or result != OK:
+         # TODO: Check how to make this break #
+            break
+    elif call_nr == RECEIVE:
+        caller_ptr['p_misc_flags'] &= ~MF_REPLY_PEND
+        IPC_STATUS_CLEAR(caller_ptr)
+        result = mini_receive(caller_ptr, src_dst_e, m_ptr, 0)
+        # TODO: Check how to make this break #
+        break
+    elif call_nr == NOTIFY:
+        result = mini_notify(caller_ptr, src_dst_e)
+        # TODO: Check how to make this break #
+        break
+    elif call_nr == SENDNB:
+        result = mini_send(caller_ptr, src_dst_e, m_ptr, NON_BLOCKING)
+        # TODO: Check how to make this break #
+        break
+    else:
+        result = EBADCALL
+
+    # Resturn the result of system call to the caller #
+    return result
