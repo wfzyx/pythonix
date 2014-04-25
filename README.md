@@ -60,3 +60,6 @@ Q: Why not use ctypes to write functions more accurately to original?
 A: The purpose of writing the OS in Python, and enables the ease of 
 maintenance is to avoid as much use any kind of dependencies and libraries 
 to non-essential to Python, allowing a clean and easy to understand code.
+
+Q: Why not just quit?
+A: [Really?](https://raw.github.com/username/projectname/branch/path/to/img.png)

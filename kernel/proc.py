@@ -154,7 +154,7 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
     ):
         if DEBUG_ENABLE_IPC_WARNINGS:
             print('sys_call: trap {} not_allowed, caller {}, src_dst {}' \
-                  .format(call_nr, proc_nr(caller_ptr), src_dst_e)
+                  .format(call_nr, proc_nr(caller_ptr), src_dst_e))
         return ETRAPDENIED
 
     if src_dst_e == ANY:
@@ -174,7 +174,7 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
                 if DEBUG_ENABLE_IPC_WARNINGS:
                     print('sys_call: ipc mask denied {} from {} to {}'\
                           .format(callname, caller_ptr['p_endpoint'],
-                          src_dst_e)                          
+                          src_dst_e))                          
                 return ECALLDENIED
 
     # MXCM #
@@ -199,7 +199,8 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
         # TODO tweak logic to swcase fall
     elif call_nr == SEND:
         result = mini_send(caller_ptr, src_dst_e, m_ptr, 0)
-        if call_nr == SEND or result != OK:        
+        if call_nr == SEND or result != OK:
+            pass       
         # TODO tweak logic to swcase break
         # TODO tweak logic to swcase fall
     elif call_nr == RECEIVE:
