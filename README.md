@@ -1,5 +1,5 @@
 PYTHONIX
------
+========
 
 Python/Minix based operating system
 
@@ -12,17 +12,17 @@ The goal is to build an OS with the following characteristics :
 * Easy learning and maintenance
 
 Documentation and Resources
+---------------------------
 
 * Operating Systems: Design And Implementation 3rd Edition by Andrew Tanenbaum
 * git://git.minix3.org/minix # minix3 src, the basis for the development of Pythonix
 * http://legacy.python.org/dev/peps/pep-0008/ # Style-Guide Python
 * http://wiki.osdev.org/Main_Page # wiki for helping in OS development
 * docs/TRANSLATION-GUIDE # Guide for C/Python translation
-
-=====
+ 
 
 FAQ
------
+---
 
 **Q**: How is possible to boot a Python O.S ? 
 
