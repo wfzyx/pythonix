@@ -222,7 +222,7 @@ def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
 def do_ipc(r1, r2, r3):
     # TODO: Check if this way of translating pointer is right
     caller_ptr = get_cpulocal_var(proc_ptr)
-    caller_nr = r1
+    call_nr = r1
 
     assert(not RTS_ISSET(caller_ptr, RTS_SLOT_FREE))
 
@@ -248,7 +248,7 @@ def do_ipc(r1, r2, r3):
             system call. If we don't, the tracer could not obtain the
             input message. Postpone the entire system call.'''
 
-            caller_ptr['p_misc_flags'] &= MF_SC_TRACE * -1
+            caller_ptr['p_misc_flags'] &= ~MF_SC_TRACE
             assert(not caller_ptr['p_misc_flags'] & MR_SC_DEFER)
             caller_ptr['p_misc_flags'] |= MF_SC_DEFER
             caller_ptr['p_defer']['r1'] = r1
@@ -262,14 +262,14 @@ def do_ipc(r1, r2, r3):
             return caller_ptr['p_reg']['retreg']
 
         # If the MF_SC_DEFER flag is set, the syscall is now being resumed.
-        caller_ptr['p_misc_flags'] &= MF_SC_DEFER * -1
+        caller_ptr['p_misc_flags'] &= ~MF_SC_DEFER
         assert(not caller_ptr['p_misc_flags'] & MF_SC_ACTIVE)
 
         # Set a flag to allow reliable tracing of leaving the system call.
         caller_ptr['p_misc_flags'] |= MF_SC_ACTIVE
 
     if caller['p_misc_flags'] & MF_DELIVERMSG:
-        panic('sys_call: MF_DELIVERMSG on for {0} / {1}'
+        panic('sys_call: MF_DELIVERMSG on for {} / {}'
               .format(caller_ptr['p_name'], caller_ptr['p_endpoint']))
 
     # MXCM #
@@ -281,7 +281,7 @@ def do_ipc(r1, r2, r3):
     - NOTIFY:  asynchronous call; deliver notification or mark pending
     - SENDA:   list of asynchronous send requests'''
 
-    if call_nr == SENDNB:
+    if call_nr in [SENDREC, SEND, RECEIVE, NOTIFY, SENDNB]:
         # Process accounting for scheduling
         # TODO: Check castings here
         return __do_sync_ipc(caller_ptr, call_nr, r2, r3)
