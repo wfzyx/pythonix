@@ -17,7 +17,7 @@ def __set_idle_name(name, n):
         n -= digit * c
         if p_z or digit != 0 or c == 1:
             p_z = True
-            name = ''.join([name, chr(ord('0')+digit)])
+            name = ''.join([name, chr(ord('0') + digit)])
             i += 1
         c = c // 10
 
@@ -55,7 +55,7 @@ def proc_init():
         rp += 1
         i += 1
 
-    sp = BEG_PRIV_ADDR+1
+    sp = BEG_PRIV_ADDR + 1
     i = 1
     while sp < END_PRIV_ADDR:
         # TODO: Check Minix NONE value.
@@ -239,7 +239,10 @@ def do_ipc(r1, r2, r3):
         # Are we tracing this process, and is it the
         # first sys_call entry?
 
-        if (caller_ptr['p_misc_flags'] & (MF_SC_TRACE | MR_SC_DEFER)) == MF_SC_TRACE:
+        if (
+            (caller_ptr['p_misc_flags'] & (MF_SC_TRACE | MR_SC_DEFER)) ==
+            MF_SC_TRACE
+        ):
             # MXCM #
             '''We must notify the tracer before processing the actual
             system call. If we don't, the tracer could not obtain the
@@ -293,7 +296,7 @@ def do_ipc(r1, r2, r3):
 
         # Limit size to something reasonable. An arbitrary choice is 16
         # times the number of process table entries
-        if msg_size > 16*(NR_TASKS + NR_PROCS):
+        if msg_size > 16 * (NR_TASKS + NR_PROCS):
             return EDOM
         # TODO: Check castings here
         return mini_senda(caller_ptr, r3, msg_size)
