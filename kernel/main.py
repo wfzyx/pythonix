@@ -125,14 +125,10 @@ def kmain(local_cbi={}):
     process has set their privileges.'''
 
     proc_nr = proc_nr(rp)
-    if (
-        iskernelln(proc_nr) or
-        isrootsysn(proc_nr) or
-        proc_nr == VM_PROC_NR
-    ):
-        schedulable_proci = True
-    else:
-        schedulable_proci = False
+    
+    schedulable_proc = iskernelln(proc_nr) or \
+                        isrootsysn(proc_nr) or \
+                        proc_nr == VM_PROC_NR
 
     if(schedulable_proc):
         get_priv(rp, static_priv_id(proc_nr))
