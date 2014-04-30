@@ -84,5 +84,8 @@ to non-essential to Python, allowing a clean and easy to understand code.
 
 **Q**: Why not just quit?
 
-**A**: Because Guido is awesome, just this
-![](docs/guido.png)
+**A**: Because great guys already show some support, so the idea worth it
+![](docs/images/guido.jpg)
+![](docs/images/ast.jpg)
+![](docs/images/arigo.jpg)
+![](docs/images/ben.jpg)
