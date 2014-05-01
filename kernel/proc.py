@@ -312,3 +312,83 @@ def do_ipc(r1, r2, r3):
     else:
         # Illegal system call
         return EBADCALL
+
+
+# TODO: Check this function I was not sure how to translate it to python
+def __deadlock(function, cp, src_dst_e):
+    # MXCM #
+    ''' Check for deadlock. This can happen if 'caller_ptr' and
+    'src_dst' have a cyclic dependency of blocking send and
+    receive calls. The only cyclic dependency that is not fatal
+    is if the caller and target directly SEND(REC) and RECEIVE
+    to each other. If a deadlock is found, the group size is
+    returned. Otherwise zero is returned.'''
+    pass
+
+
+def __has_pending(_map, src_p, asynm):
+    # MXCM #
+    # Check to see if there is a pending message from
+    # the desired source available.
+
+    _id = NULL_PRIV_ID
+
+    if CONFIG_SMP:
+        p = {}
+
+    # MXCM #
+    '''Either check a specific bit in the mask map, or find the first
+    bit set in it (if any), depending on whether the receive was
+    called on a specific source endpoint.'''
+
+    if src_p != ANY:
+        src_id = nr_to_id(src_p)
+
+        if get_sys_bit(_map, src_id):
+
+            if CONFIG_SMP:
+                p = proc_addr(id_to_nr(src_id))
+
+                if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
+                    p['p_misc_flags'] |= MF_SENDA_VM_MISS
+                else:
+                    _id = src_id
+    else:
+        # Find a source with a pending message
+
+        aux = True
+        for src_id in range(0, NR_SYS_PROCS, BITCHUNCK_BITS):
+            if get_sys_bits(_map, src_id) != 0:
+
+                if CONFIG_SMP:
+                    while src_id < NR_SYS_PROCS and aux:
+                        while not get_sys_bit(_map, src_id) and aux:
+                            if src_id == NR_SYS_PROCS:
+                                aux = False
+                                break
+                            src_id += 1
+                        if not aux:
+                            break
+                        p = proc_addr(id_to_nr(src_id))
+                        # MXCM #
+                        ''' We must not let kernel fiddle with pages of a
+                        process which are currently being changed by
+                        VM.  It is dangerous! So do not report such a
+                        process as having pending async messages.
+                        Skip it.'''
+                        if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
+                            p['p_misc_flags'] |= MF_SENDA_VM_MISS
+                            src_id += 1
+                        else:
+                            aux = False
+                            break
+                elif aux:
+                    while not get_sys_bit(_map, src_id):
+                        src_id += 1
+                    aux = False
+                    break
+
+        if src_id < NR_SYS_PROCS:
+            # Founf one
+            _id = src_id
+    return _id
