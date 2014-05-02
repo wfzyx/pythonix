@@ -86,8 +86,10 @@ def __switch_address_space_idle():
     when the CPU wakes up the kernel is mapped and no surprises happen.
     This is only a problem if more than 1 cpus are available.'''
 
+    '''
     if CONFIG_SMP:
         switch_address_space(proc_addr(VM_PROC_NR))
+    '''
 
 
 def __idle():
@@ -105,6 +107,7 @@ def __idle():
 
     __switch_address_space_idle()
 
+    '''
     if not CONFIG_SMP:
         restart_local_timer()
     else:
@@ -113,6 +116,7 @@ def __idle():
             stop_local_timer()
         else:
             restart_local_timer()
+    '''
 
     # Start accounting for the idle time #
     context_stop(proc_addr(KERNEL))
@@ -331,10 +335,12 @@ def __has_pending(_map, src_p, asynm):
     # Check to see if there is a pending message from
     # the desired source available.
 
-    _id = NULL_PRIV_ID
+    id = NULL_PRIV_ID
 
+    '''
     if CONFIG_SMP:
         p = {}
+    '''
 
     # MXCM #
     '''Either check a specific bit in the mask map, or find the first
@@ -345,14 +351,17 @@ def __has_pending(_map, src_p, asynm):
         src_id = nr_to_id(src_p)
 
         if get_sys_bit(_map, src_id):
-
+            # This if does nothig while CONFIG_SMP is not implemented
+            pass
+            '''
             if CONFIG_SMP:
                 p = proc_addr(id_to_nr(src_id))
 
                 if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
                     p['p_misc_flags'] |= MF_SENDA_VM_MISS
                 else:
-                    _id = src_id
+                    id = src_id
+            '''
     else:
         # Find a source with a pending message
 
@@ -360,6 +369,7 @@ def __has_pending(_map, src_p, asynm):
         for src_id in range(0, NR_SYS_PROCS, BITCHUNCK_BITS):
             if get_sys_bits(_map, src_id) != 0:
 
+                '''
                 if CONFIG_SMP:
                     while src_id < NR_SYS_PROCS and aux:
                         while not get_sys_bit(_map, src_id) and aux:
@@ -371,18 +381,21 @@ def __has_pending(_map, src_p, asynm):
                             break
                         p = proc_addr(id_to_nr(src_id))
                         # MXCM #
-                        ''' We must not let kernel fiddle with pages of a
+                        """ We must not let kernel fiddle with pages of a
                         process which are currently being changed by
                         VM.  It is dangerous! So do not report such a
                         process as having pending async messages.
-                        Skip it.'''
+                        Skip it."""
                         if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
                             p['p_misc_flags'] |= MF_SENDA_VM_MISS
                             src_id += 1
                         else:
                             aux = False
                             break
-                elif aux:
+                '''
+                if aux:
+                    # TODO: Change this if to elif when CONFIG_SMP is
+                    # implemented
                     while not get_sys_bit(_map, src_id):
                         src_id += 1
                     aux = False
@@ -390,5 +403,5 @@ def __has_pending(_map, src_p, asynm):
 
         if src_id < NR_SYS_PROCS:
             # Founf one
-            _id = src_id
-    return _id
+            id = src_id
+    return id
