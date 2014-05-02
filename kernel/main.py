@@ -4,11 +4,10 @@
     each task to run to initialize itself.
     The routine shutdown() does the opposite and brings down PYTHONIX.
     The entries into this file are:
-    main: PYTHONIX main program
+    kmain: PYTHONIX main program
     prepare_shutdown:	prepare to take PYTHONIX down'''
 
 # TODO check dependencies
-
 
 def bsp_finish_booting():
     if SPOFILE:
@@ -73,12 +72,12 @@ def bsp_finish_booting():
     switch_to_user()
 
 
-def kmain(local_cbi={}):
+def kmain(local_cbi={'kmess':None}):
     # TODO check if this is really necessary
     kinfo = local_cbi
     kmess = kinfo['kmess']
 
-    machine['board_id'] = get_board_id_by_name(env_get(BOARDVARNAME))
+    machine['board_id'] =  get_board_id_by_name(env_get(BOARDVARNAME))
 
     if __arm__:
         arch_ser_init()
@@ -181,7 +180,8 @@ def kmain(local_cbi={}):
 
     # scheduing functions depend on proc_ptr pointing somewhere
     if not get_cpulocal_var(proc_ptr):
-        get_cpulocal_var(proc_ptr) = rp
+        # TODO Check SMP stuffs
+        CPULOCAL_STRUCT[0][name] = rp
 
     # process isn't scheduled until VM has set up a pagetable for it
     if rp['p_nr'] != VM_PROC_NR and rp['p_nr'] >= 0:
@@ -366,4 +366,5 @@ def cpu_print_freq(cpu):
 def is_fpu():
     return get_cpulocal_var(fpu_presence)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    kmain()

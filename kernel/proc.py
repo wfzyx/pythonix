@@ -103,7 +103,8 @@ def __idle():
     # p = get_cpulocal_var(proc_ptr) = get_cpulocal_var_ptr(idle_proc)
 
     if priv(p)['s_flags'] & BILLABLE:
-        get_cpulocal_var(bill_ptr) = p
+        # TODO check SMP stuff
+        CPULOCAL_STRUCT[0][bill_ptr] = p
 
     __switch_address_space_idle()
 
@@ -111,7 +112,7 @@ def __idle():
     if not CONFIG_SMP:
         restart_local_timer()
     else:
-        get_cpulocal_var(cpu_is_idle) = 1
+        CPULOCAL_STRUCT[0][cpu_is_idle] = 1
         if (cpuid != bsp_cpu_id):
             stop_local_timer()
         else:
