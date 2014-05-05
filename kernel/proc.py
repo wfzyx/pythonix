@@ -336,7 +336,7 @@ def __has_pending(_map, src_p, asynm):
     # Check to see if there is a pending message from
     # the desired source available.
 
-    id = NULL_PRIV_ID
+    _id = NULL_PRIV_ID
 
     '''
     if CONFIG_SMP:
@@ -361,7 +361,7 @@ def __has_pending(_map, src_p, asynm):
                 if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
                     p['p_misc_flags'] |= MF_SENDA_VM_MISS
                 else:
-                    id = src_id
+                    _id = src_id
             '''
     else:
         # Find a source with a pending message
@@ -404,5 +404,20 @@ def __has_pending(_map, src_p, asynm):
 
         if src_id < NR_SYS_PROCS:
             # Founf one
-            id = src_id
-    return id
+            _id = src_id
+    return _id
+
+
+def has_pending_notify(caller, src_p):
+    _map = priv(caller)['s_notify_pending']
+    return __has_pending(_map, src_p, 0)
+
+
+def has_pending_asend(caller, src_p):
+    _map = priv(caller)['s_asyn_pending']
+    return __has_pending(_map, src_p, 1)
+
+
+def unset_notify_pending(caller, src_p):
+    _map = priv(caller)['s_notify_pending']
+    unset_sys_bit(_map, src_p)
