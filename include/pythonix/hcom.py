@@ -1,0 +1,1 @@
+GET_KINFO = 0

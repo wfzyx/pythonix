@@ -8,7 +8,8 @@
     prepare_shutdown:	prepare to take PYTHONIX down'''
 
 # TODO check dependencies
-
+import include.pythonix.hboard
+import include.pythonix.hconst
 def bsp_finish_booting():
     if SPOFILE:
         sprofiling = 0
@@ -77,7 +78,7 @@ def kmain(local_cbi={'kmess':None}):
     kinfo = local_cbi
     kmess = kinfo['kmess']
 
-    machine['board_id'] =  get_board_id_by_name(env_get(BOARDVARNAME))
+    machine['board_id'] =  include.pythonix.hboard.get_board_id_by_name(env_get(include.pythonix.hconst.CONST.BOARDVARNAME))
 
     if __arm__:
         arch_ser_init()
@@ -223,8 +224,7 @@ def kmain(local_cbi={'kmess':None}):
             smp_init()
             bsp_finish_booting()
     else:'''
-        '''
-        if configured for a single CPU, we are already
+    ''' if configured for a single CPU, we are already
         on the kernel stack which we are going to use
         everytime we execute kernel code. We finish
         booting and we never return here'''
@@ -254,13 +254,13 @@ def pythonix_shutdown(tp):
     down PYTHONIX. How to shutdown is in the argument: RBT_HALT (return to the
     monitor), RBT_RESET (hard reset).
     '''
-    '''if CONFIG_SMP:
+    '''if CONFIG_SMP:'''
         # MXCM #
-        '''FIXME:
+    '''FIXME:
         we will need to stop timers on all cpus if SMP is
         enabled and put them in such a state that we can
         perform the whole boot process once restarted from
-        monitor again'''
+        monitor again
         if ncpus > 1:
             smp_shutdown_aps()'''
 
