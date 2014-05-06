@@ -59,13 +59,13 @@ def bsp_finish_booting():
     cycles_accounting_init()
     debugextra('done')
 
-    if CONFIG_SMP:
+    '''if CONFIG_SMP:
         cpu_set_flag(bsp_cpu_id, CPU_IS_READY)
         machine['processors_count'] = ncpus
         machine['bsp_id'] = bsp_cpu_id
-    else:
-        machine['processors_count'] = 1
-        machine['bsp_id'] = 0
+    else:'''
+    machine['processors_count'] = 1
+    machine['bsp_id'] = 0
 
     kernel_may_alloc = 0
 
@@ -211,7 +211,7 @@ def kmain(local_cbi={'kmess':None}):
     # TODO Check this
     # kinfo = add_memmap()
 
-    if CONFIG_SMP:
+    '''if CONFIG_SMP:
         if config_no_apic:
             BOOT_VERBOSE(
                 print('APIC disabled, disables SMP, using legact PIC'))
@@ -222,13 +222,13 @@ def kmain(local_cbi={'kmess':None}):
         else:
             smp_init()
             bsp_finish_booting()
-    else:
+    else:'''
         '''
         if configured for a single CPU, we are already
         on the kernel stack which we are going to use
         everytime we execute kernel code. We finish
         booting and we never return here'''
-        bsp_finish_booting()
+    bsp_finish_booting()
 
     return local_cbi
 
@@ -254,7 +254,7 @@ def pythonix_shutdown(tp):
     down PYTHONIX. How to shutdown is in the argument: RBT_HALT (return to the
     monitor), RBT_RESET (hard reset).
     '''
-    if CONFIG_SMP:
+    '''if CONFIG_SMP:
         # MXCM #
         '''FIXME:
         we will need to stop timers on all cpus if SMP is
@@ -262,7 +262,7 @@ def pythonix_shutdown(tp):
         perform the whole boot process once restarted from
         monitor again'''
         if ncpus > 1:
-            smp_shutdown_aps()
+            smp_shutdown_aps()'''
 
     hw_intr_disable_all()
     stop_local_timer()
@@ -333,7 +333,7 @@ def cstart():
         if value:
             watchdog_enabled = int(value)
 
-    if CONFIG_SMP:
+    '''if CONFIG_SMP:
         if(config_no_apic):
             config_no_smp = 1
         value = env_get('no_smp')
@@ -341,7 +341,7 @@ def cstart():
             config_no_smp = int(value)
         else:
             config_no_smp = 0
-
+'''
     intr_init(0)
     arch_init()
 

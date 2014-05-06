@@ -108,10 +108,10 @@ def __idle():
 
     __switch_address_space_idle()
 
-    '''
-    if not CONFIG_SMP:
-        restart_local_timer()
-    else:
+    
+    # TODO Check this if necessary
+    restart_local_timer()
+    '''if CONFIG_SMP:
         CPULOCAL_STRUCT[0][cpu_is_idle] = 1
         if (cpuid != bsp_cpu_id):
             stop_local_timer()
@@ -354,6 +354,7 @@ def __has_pending(_map, src_p, asynm):
         if get_sys_bit(_map, src_id):
             # This if does nothig while CONFIG_SMP is not implemented
             pass
+            # TODO Implement SMP
             '''
             if CONFIG_SMP:
                 p = proc_addr(id_to_nr(src_id))
@@ -369,7 +370,7 @@ def __has_pending(_map, src_p, asynm):
         aux = True
         for src_id in range(0, NR_SYS_PROCS, BITCHUNCK_BITS):
             if get_sys_bits(_map, src_id) != 0:
-
+                # TODO Implement SMP
                 '''
                 if CONFIG_SMP:
                     while src_id < NR_SYS_PROCS and aux:
