@@ -72,7 +72,7 @@ def bsp_finish_booting():
 
     switch_to_user()
 
-
+# TODO Remove hard code cbi
 def kmain(local_cbi={'kmess':None}):
     # TODO check if this is really necessary
     kinfo = local_cbi
