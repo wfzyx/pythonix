@@ -23,12 +23,11 @@ Documentation and Resources
 ROADMAP
 -------
 
-1. Translate /kernel to Python3 without SMP # Started
-  1.2. Sys_calls, kernel dependencies
-  1.1. Initially *.c files (clock, interrupt, ipc, vm, system, main, proc) # In Progress
-  1.2. Search for dependencies and solve TODO to run *.py files # Waiting
-  1.3. Make units test, and make kernel run without panic # Waiting
-
+1. Translate /kernel to Python3 without SMP # Started<br/>
+  1.2. Sys_calls, kernel dependencies<br/>
+  1.1. Initially *.c files (clock, interrupt, ipc, vm, system, main, proc) # In Progress<br/>
+  1.2. Search for dependencies and solve TODO to run *.py files # Waiting<br/>
+  1.3. Make units test, and make kernel run without panic # Waiting<br/>
 2. Translate /drivers to Python3
 3. With LLVM/Clang/PyPy/ASM make a boot/JIT environment
 4. Translate /sys and start to make FS, and other basic stuff
