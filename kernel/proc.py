@@ -1,7 +1,7 @@
 # TODO: Check dependencies #
 
 
-def __set_idle_name(name, n):
+def _set_idle_name(name, n):
 
     p_z = False
 
@@ -77,10 +77,10 @@ def proc_init():
         ip['p_priv'] = idle_priv
         # Idle must never be scheduled #
         ip['p_rts_flags'] |= RTS_PROC_STOP
-        __set_idle_name(ip['p_name'], i)
+        _set_idle_name(ip['p_name'], i)
 
 
-def __switch_address_space_idle():
+def _switch_address_space_idle():
     # MXCM #
     ''' Currently we bet that VM is always alive and its pages available so
     when the CPU wakes up the kernel is mapped and no surprises happen.
@@ -92,7 +92,7 @@ def __switch_address_space_idle():
     '''
 
 
-def __idle():
+def _idle():
     # MXCM #
     ''' This function is called whenever there is no work to do.
     Halt the CPU, and measure how many timestamp counter ticks are
@@ -106,7 +106,7 @@ def __idle():
         # TODO check SMP stuff
         CPULOCAL_STRUCT[0][bill_ptr] = p
 
-    __switch_address_space_idle()
+    _switch_address_space_idle()
 
     
     # TODO Check this if necessary
@@ -143,7 +143,7 @@ def switch_to_user():
 
 
 # Handler for all synchronous IPC calls #
-def __do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
+def _do_sync_ipc(caller_ptr, call_nr, src_dst_e, m_ptr):
     # MXCM #
     '''Check destination. RECEIVE is the only call that accepts ANY (in
     addition to a real endpoint). The other calls (SEND, SENDREC, and NOTIFY)
@@ -289,7 +289,7 @@ def do_ipc(r1, r2, r3):
     if call_nr in [SENDREC, SEND, RECEIVE, NOTIFY, SENDNB]:
         # Process accounting for scheduling
         # TODO: Check castings here
-        return __do_sync_ipc(caller_ptr, call_nr, r2, r3)
+        return _do_sync_ipc(caller_ptr, call_nr, r2, r3)
 
     elif call_nr == SENDA:
         # Get and check the size of the arguments in bytes
@@ -320,7 +320,7 @@ def do_ipc(r1, r2, r3):
 
 
 # TODO: Check this function I was not sure how to translate it to python
-def __deadlock(function, cp, src_dst_e):
+def _deadlock(function, cp, src_dst_e):
     # MXCM #
     ''' Check for deadlock. This can happen if 'caller_ptr' and
     'src_dst' have a cyclic dependency of blocking send and
@@ -331,7 +331,7 @@ def __deadlock(function, cp, src_dst_e):
     pass
 
 
-def __has_pending(_map, src_p, asynm):
+def _has_pending(_map, src_p, asynm):
     # MXCM #
     # Check to see if there is a pending message from
     # the desired source available.

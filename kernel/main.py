@@ -233,7 +233,7 @@ def kmain(local_cbi={'kmess':None}):
     return local_cbi
 
 
-def __announce():
+def _announce():
     print('''
     PYTHONIX
     Join us to make Pythonix better...

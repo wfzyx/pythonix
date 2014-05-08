@@ -4,8 +4,8 @@ Pythonix C/Python Translation-Guide
 Functions and variables of type "static" that are private to the module, state with 
 the convention to prefix with two underscores 
 
-static int try_async(); -> __try_async()
-static void enqueue_head(); -> __enqueue_head()
+static int try_async(); -> _try_async()
+static void enqueue_head(); -> _enqueue_head()
 
 ---
 
