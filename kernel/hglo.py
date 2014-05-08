@@ -5,6 +5,7 @@
  	compiler's default initialization (0) for several global variables. '''
 
 # TODO check imports
+# TODO chech all extern definitions are ini'ed in another place
 
 # Kernel Information Structures
 class Global():
