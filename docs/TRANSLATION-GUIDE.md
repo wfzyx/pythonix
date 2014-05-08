@@ -1,5 +1,4 @@
 Pythonix C/Python Translation-Guide
-
 =====
 
 Functions and variables of type "static" that are private to the module, state with 
