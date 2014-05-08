@@ -29,10 +29,9 @@ ROADMAP
   1.2. Search for dependencies and solve TODO to run *.py files # Waiting<br/>
   1.3. Make units test, and make kernel run without panic # Waiting<br/>
 2. Translate /drivers to Python3
-3. With LLVM/Clang/PyPy/ASM make a boot/JIT environment
-4. Translate /sys and start to make FS, and other basic stuff
-5. Make applications, cat, echo , pwd, rm, ls, and others
-7. Network and extra drivers
+3. Translate /sys and start to make FS, and other basic stuff
+4. Make applications, cat, echo , pwd, rm, ls, and others
+5. Network and extra drivers
 6. Package Manager
 7. SMP suppport
 
