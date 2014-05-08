@@ -10,6 +10,7 @@
 # TODO check dependencies
 import include.pythonix.hboard
 import include.pythonix.hconst
+
 def bsp_finish_booting():
     if SPOFILE:
         sprofiling = 0
@@ -18,7 +19,6 @@ def bsp_finish_booting():
     cpu_identify()
     vm_running = 0
     # TODO check krandom struct
-
     krandom['random_sources'] = RANDOM_SOURCES
     krandom['random_elements'] = RANDOM_ELEMENTS
 
@@ -267,7 +267,7 @@ def pythonix_shutdown(tp):
     hw_intr_disable_all()
     stop_local_timer()
     # TODO check tmr_arg AGAIN
-    how = tmr_arg(tp)['ta_int'] if tp else RBT_PANIC
+    # how = tmr_arg(tp)['ta_int'] if tp else RBT_PANIC
 
     direct_cls()
     if how == RBT_HALT:
@@ -341,7 +341,7 @@ def cstart():
             config_no_smp = int(value)
         else:
             config_no_smp = 0
-'''
+    '''
     intr_init(0)
     arch_init()
 
