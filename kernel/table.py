@@ -1,7 +1,4 @@
-# MXCM
-'''EXTERN int x;
-
-The object file of "table.c" contains most kernel data. Variables that are
+'''The object file of "table.c" contains most kernel data. Variables that are
 declared in the *.h files appear with EXTERN in front of them, as in
 
 EXTERN int x;
