@@ -108,7 +108,7 @@ def _idle():
 
     _switch_address_space_idle()
 
-    
+
     # TODO Check this if necessary
     restart_local_timer()
     '''if CONFIG_SMP:
@@ -411,14 +411,103 @@ def _has_pending(_map, src_p, asynm):
 
 def has_pending_notify(caller, src_p):
     _map = priv(caller)['s_notify_pending']
-    return __has_pending(_map, src_p, 0)
+    return _has_pending(_map, src_p, 0)
 
 
 def has_pending_asend(caller, src_p):
     _map = priv(caller)['s_asyn_pending']
-    return __has_pending(_map, src_p, 1)
+    return _has_pending(_map, src_p, 1)
 
 
 def unset_notify_pending(caller, src_p):
     _map = priv(caller)['s_notify_pending']
     unset_sys_bit(_map, src_p)
+
+
+def mini_send(caller_ptr, dst_e, m_ptr, flags):
+    dst_p = ENDPOINT(dst_e)
+    dst_ptr = proc_addr(dst_p)
+
+    if RTS_ISSET(dst_ptr, RTS_NO_ENDPOINT):
+        return EDEADSRCDST
+
+    # MXCM #
+    '''Check if 'dst' is blocked waiting for this message. The
+    destination's RTS_SENDING flag may be set when its SENDREC
+    call blocked while sending'''
+
+    if WILLRECEIVE(dst_ptr, caller_ptr['p_endpoint']):
+        # Destination is indeed waiting for this message.
+        assert(not (dst_ptr['p_misc_flags'] & MF_DELIVERMSG))
+
+        if not (flags & FROM_KERNEL):
+            if copy_msg_from_user(m_ptr, dst_ptr['p_delivermsg']):
+                return EFAULT
+        else:
+            dst_ptr['p_delivermsg'] = m_ptr
+            IPC_STATUS_ADD_FLAGS(dst_ptr, IPC_FLG_MSG_FROM_KERNEL)
+
+        dst_ptr['p_delivermsg']['m_source'] = caller_ptr['p_endpoint']
+        dst_ptr['p_misc_flags'] |= MF_DELIVERMSG
+
+        if caller_ptr['p_misc_flags'] & MF_REPLY_PEND:
+            call = SENDREC
+        else:
+            if flags & NON_BLOCKING:
+                call = SENDNB
+            else:
+                call = SEND
+
+        IPC_STATUS_ADD_CALL(dst_ptr, call)
+
+        if dst_ptr['p_misc_flags'] & MF_REPLY_PEND:
+            dst_ptr['p_misc_flags'] &= ~MF_REPLY_PEND
+
+        RTS_UNSET(dst_ptr, RTS_RECEIVING)
+
+        if DEBUG_IPC_HOOK:
+            hook_ipc_msgsend(dst_ptr['p_delivermsg'], caller_ptr, dst_ptr)
+            hook_ipc_msgrecv(dst_ptr['p_delivermsg'], caller_ptr, dst_ptr)
+
+    else:
+        if flags & NON_BLOCKING:
+            return ENOTREADY
+
+        # Check for a possible deadlock before actually blocking
+        if deadlock(send, caler_ptr, dst_e):
+            return ELOCKED
+
+        # Destination is not waiting. Block and dequeue caller
+        if not flags & FROM_KERNEL:
+            if copy_msg_from_user(m_ptr, caller_ptr['p_sendmsg']):
+                return EFAULT
+        else:
+            caller_ptr['p_sendmsg'] = m_ptr
+
+            # MXCM #
+            '''We need to remember that this message is from kernel
+            so we can set the delivery status flags when the message
+            is actually delivered'''
+
+            caller_ptr['p_misc_flags'] |= MF_SENDING_FROM_KERNEL
+
+        RTS_SET(caller_ptr, RTS_SENDING)
+        caller_ptr['p_sendto_e'] = dst_e
+
+        # Process is now blocked. Put in on destination's queue
+        assert(caller_ptr['p_q_link'] == None)
+
+        # TODO: Check how to do this
+        '''
+        while (*xpp) xpp = &(*xpp)->p_q_link;
+	*xpp = caller_ptr;
+        '''
+
+        if DEBUG_IPC_HOOK:
+            hook_ipc_msgsend(caller_ptr['p_sendmsg'], caller_ptr, dst_ptr)
+
+    return OK
+
+
+def _mini_receive():
+    pass
