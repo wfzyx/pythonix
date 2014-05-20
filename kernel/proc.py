@@ -478,7 +478,7 @@ def mini_send(caller_ptr, dst_e, m_ptr, flags):
             return ELOCKED
 
         # Destination is not waiting. Block and dequeue caller
-        if not flags & FROM_KERNEL:
+        if not (flags & FROM_KERNEL):
             if copy_msg_from_user(m_ptr, caller_ptr['p_sendmsg']):
                 return EFAULT
         else:
@@ -510,12 +510,19 @@ def mini_send(caller_ptr, dst_e, m_ptr, flags):
 
 
 def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
+
+    def receive_done(caller_ptr):
+        # Function to help get rid of goto
+        if caller_ptr['p_misc_flags'] & MF_REPLY_PEND:
+            caller_ptr['p_misc_flags'] &= ~MR_REPLY_PEND
+        return OK
+
     # MXCM #
     '''A process or task wants to get a message.  If a message is
     already queued, acquire it and deblock the sender.  If no message
     from the desired source is available block the caller.'''
 
-    assert(not caller_ptr['p_misc_flags'] & MF_ELIVERMSG)
+    assert(not (caller_ptr['p_misc_flags'] & MF_ELIVERMSG))
 
     # This is where we want our message #
     caller_ptr['p_delivermsg_vir'] = m_buff_usr
@@ -535,7 +542,7 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
     if not RTS_ISSET(caller_ptr, RTS_SENDING):
 
         # Check if there are pending notifications, except for SENDREC
-        if not caller_ptr['p_misc_flags'] & MF_REPLY_PEND:
+        if not (caller_ptr['p_misc_flags'] & MF_REPLY_PEND):
 
             # TODO: check if there's an error on minix code here
             src_id = has_pending_notify(caller_ptr, src_p)
@@ -543,8 +550,7 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
 
                 src_proc_nr = id_to_nr(src_id)
                 if DEBUG_ENABLE_IPC_WARNINGS:
-                    if src_proc_nr == NONE:
-                        print('mini_receive: sending notify from NONE')
+                    print('mini_receive: sending notify from ', src_proc_nr)
 
                 assert(src_proc_nr != NONE)
                 unset_notify_pending(caller_ptr, src_id)
@@ -552,7 +558,7 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
                 # Found a suitable source, deliver the
                 # notification message
                 hisep = proc_addr(src_proc_nr)['p_endpoint']
-                assert(not caller_ptr['p_misc_flags'] & MF_DELIVERMSG)
+                assert(not (caller_ptr['p_misc_flags'] & MF_DELIVERMSG))
                 assert(src_e == ANY or hisep == src_e)
 
                 # Assemble the message
@@ -581,6 +587,20 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
         # Check caller queue.
         # TODO: Check the possibility to use id() when variable address
         # is used in minix code
+
+        '''This xpp, is a list implementation with a null terminator,
+        the '\0' character, many points in system use this, but
+        depending on the situation it'll be tweaked in a different way.
+        This message communication interface it's very probably to be
+        replaced for a class with a dict of lists, where each entry of
+        dict is a proc_id and each entry of list is a message for the
+        owner process for that key in dict, this only can be solved
+        when the code is almost finished, to realize what can be
+        replaced or not'''
+
+        # FIXME: Implement the class described above for use in the
+        # commented code below
+        """
         xpp = caller_ptr['p_caller_q']
 
         while xpp:
@@ -626,6 +646,7 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
                 sender['p_q_link'] = None
                 return receive_done(caller_ptr)
             xpp = sender['p_q_link']
+        """
 
     # MXCM #
     ''' No suitable message is available or the caller couldn't send in
@@ -634,7 +655,7 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
 
     if not(flags & NON_BLOCKING):
         # Check for a possible deadlock before actually blocking.
-        if deadlock(RECEIVE, caller_ptr, src_e):
+        if _deadlock(RECEIVE, caller_ptr, src_e):
             return ELOCKED
 
         caller_ptr['p_getfrom_e'] = src_e
@@ -644,10 +665,3 @@ def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
         return ENOTREADY
 
     return receive_done(caller_ptr)
-
-
-def receive_done(caller_ptr):
-    # Function to help get rid of goto
-    if caller_ptr['p_misc_flags'] & MF_REPLY_PEND:
-        caller_ptr['p_misc_flags'] &= ~MR_REPLY_PEND
-    return OK
