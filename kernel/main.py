@@ -73,9 +73,9 @@ def bsp_finish_booting():
     switch_to_user()
 
 # TODO Remove hard code cbi
-def kmain(local_cbi={'kmess':None}):
+def kmain(local_cbi={}):
     # TODO check if this is really necessary
-    kinfo = local_cbi
+    kernel.hglo.kinfo = local_cbi
     kmess = kinfo['kmess']
 
     machine['board_id'] =  include.pythonix.hboard.get_board_id_by_name(env_get(include.pythonix.hconst.CONST.BOARDVARNAME))

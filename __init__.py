@@ -1,5 +1,7 @@
 # TODO remove hard coded imports
-import include.pythonix
+import include.pythonix.hboard
 import kernel.main
+import kernel.hglo
 
-kernel.main.kmain()
+parm = {'kmess':0}
+kernel.main.kmain(parm)
