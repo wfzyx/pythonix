@@ -108,7 +108,7 @@ def _idle():
 
     _switch_address_space_idle()
 
-    
+
     # TODO Check this if necessary
     restart_local_timer()
     '''if CONFIG_SMP:
@@ -336,7 +336,7 @@ def _has_pending(_map, src_p, asynm):
     # Check to see if there is a pending message from
     # the desired source available.
 
-    id = NULL_PRIV_ID
+    _id = NULL_PRIV_ID
 
     '''
     if CONFIG_SMP:
@@ -362,7 +362,7 @@ def _has_pending(_map, src_p, asynm):
                 if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
                     p['p_misc_flags'] |= MF_SENDA_VM_MISS
                 else:
-                    id = src_id
+                    _id = src_id
             '''
     else:
         # Find a source with a pending message
@@ -405,5 +405,263 @@ def _has_pending(_map, src_p, asynm):
 
         if src_id < NR_SYS_PROCS:
             # Founf one
-            id = src_id
-    return id
+            _id = src_id
+    return _id
+
+
+def has_pending_notify(caller, src_p):
+    _map = priv(caller)['s_notify_pending']
+    return _has_pending(_map, src_p, 0)
+
+
+def has_pending_asend(caller, src_p):
+    _map = priv(caller)['s_asyn_pending']
+    return _has_pending(_map, src_p, 1)
+
+
+def unset_notify_pending(caller, src_p):
+    _map = priv(caller)['s_notify_pending']
+    unset_sys_bit(_map, src_p)
+
+
+def mini_send(caller_ptr, dst_e, m_ptr, flags):
+    dst_p = ENDPOINT(dst_e)
+    dst_ptr = proc_addr(dst_p)
+
+    if RTS_ISSET(dst_ptr, RTS_NO_ENDPOINT):
+        return EDEADSRCDST
+
+    # MXCM #
+    '''Check if 'dst' is blocked waiting for this message. The
+    destination's RTS_SENDING flag may be set when its SENDREC
+    call blocked while sending'''
+
+    if WILLRECEIVE(dst_ptr, caller_ptr['p_endpoint']):
+        # Destination is indeed waiting for this message.
+        assert(not (dst_ptr['p_misc_flags'] & MF_DELIVERMSG))
+
+        if not (flags & FROM_KERNEL):
+            if copy_msg_from_user(m_ptr, dst_ptr['p_delivermsg']):
+                return EFAULT
+        else:
+            dst_ptr['p_delivermsg'] = m_ptr
+            IPC_STATUS_ADD_FLAGS(dst_ptr, IPC_FLG_MSG_FROM_KERNEL)
+
+        dst_ptr['p_delivermsg']['m_source'] = caller_ptr['p_endpoint']
+        dst_ptr['p_misc_flags'] |= MF_DELIVERMSG
+
+        if caller_ptr['p_misc_flags'] & MF_REPLY_PEND:
+            call = SENDREC
+        else:
+            if flags & NON_BLOCKING:
+                call = SENDNB
+            else:
+                call = SEND
+
+        IPC_STATUS_ADD_CALL(dst_ptr, call)
+
+        if dst_ptr['p_misc_flags'] & MF_REPLY_PEND:
+            dst_ptr['p_misc_flags'] &= ~MF_REPLY_PEND
+
+        RTS_UNSET(dst_ptr, RTS_RECEIVING)
+
+        if DEBUG_IPC_HOOK:
+            hook_ipc_msgsend(dst_ptr['p_delivermsg'], caller_ptr, dst_ptr)
+            hook_ipc_msgrecv(dst_ptr['p_delivermsg'], caller_ptr, dst_ptr)
+
+    else:
+        if flags & NON_BLOCKING:
+            return ENOTREADY
+
+        # Check for a possible deadlock before actually blocking
+        if deadlock(send, caler_ptr, dst_e):
+            return ELOCKED
+
+        # Destination is not waiting. Block and dequeue caller
+        if not (flags & FROM_KERNEL):
+            if copy_msg_from_user(m_ptr, caller_ptr['p_sendmsg']):
+                return EFAULT
+        else:
+            caller_ptr['p_sendmsg'] = m_ptr
+
+            # MXCM #
+            '''We need to remember that this message is from kernel
+            so we can set the delivery status flags when the message
+            is actually delivered'''
+
+            caller_ptr['p_misc_flags'] |= MF_SENDING_FROM_KERNEL
+
+        RTS_SET(caller_ptr, RTS_SENDING)
+        caller_ptr['p_sendto_e'] = dst_e
+
+        # Process is now blocked. Put in on destination's queue
+        assert(caller_ptr['p_q_link'] == None)
+
+        # TODO: Check how to do this
+        '''
+        while (*xpp) xpp = &(*xpp)->p_q_link;
+	*xpp = caller_ptr;
+        '''
+
+        if DEBUG_IPC_HOOK:
+            hook_ipc_msgsend(caller_ptr['p_sendmsg'], caller_ptr, dst_ptr)
+
+    return OK
+
+
+def _mini_receive(caller_ptr, src_e, m_buff_usr, flags):
+
+    def receive_done(caller_ptr):
+        # Function to help get rid of goto
+        if caller_ptr['p_misc_flags'] & MF_REPLY_PEND:
+            caller_ptr['p_misc_flags'] &= ~MR_REPLY_PEND
+        return OK
+
+    # MXCM #
+    '''A process or task wants to get a message.  If a message is
+    already queued, acquire it and deblock the sender.  If no message
+    from the desired source is available block the caller.'''
+
+    assert(not (caller_ptr['p_misc_flags'] & MF_ELIVERMSG))
+
+    # This is where we want our message #
+    caller_ptr['p_delivermsg_vir'] = m_buff_usr
+
+    if src_e == ANY:
+        src_p = ANY
+    else:
+        okendpt(src_e, src_p)
+        if RTS_ISSET(proc_addr(src_p), RTS_NO_ENDPOINT):
+            return EDEADSRCDST
+
+    # MXCM #
+    '''Check to see if a message from desired source is already available.  The
+    caller's RTS_SENDING flag may be set if SENDREC couldn't send. If it is
+    set, the process should be blocked.'''
+
+    if not RTS_ISSET(caller_ptr, RTS_SENDING):
+
+        # Check if there are pending notifications, except for SENDREC
+        if not (caller_ptr['p_misc_flags'] & MF_REPLY_PEND):
+
+            # TODO: check if there's an error on minix code here
+            src_id = has_pending_notify(caller_ptr, src_p)
+            if src_id != NULL_PRIV_ID:
+
+                src_proc_nr = id_to_nr(src_id)
+                if DEBUG_ENABLE_IPC_WARNINGS:
+                    print('mini_receive: sending notify from ', src_proc_nr)
+
+                assert(src_proc_nr != NONE)
+                unset_notify_pending(caller_ptr, src_id)
+
+                # Found a suitable source, deliver the
+                # notification message
+                hisep = proc_addr(src_proc_nr)['p_endpoint']
+                assert(not (caller_ptr['p_misc_flags'] & MF_DELIVERMSG))
+                assert(src_e == ANY or hisep == src_e)
+
+                # Assemble the message
+                BuildNotifyMessage(caller_ptr['p_delivermsg'],
+                                   src_proc_nr,
+                                   caller_ptr)
+                caller_ptr['p_delivermsg']['m_source'] = hisep
+                caller_ptr['p_misc_flags'] |= MF_DELIVERMSG
+
+                IPC_STATUS_ADD_CALL(caller_ptr, NOTIFY)
+
+                return receive_done(caller_ptr)
+
+        # Check for pending asynchronous messages
+        if has_pending_asend(caller_ptr, src_p) != NULL_PRIV_ID:
+
+            if src_p != ANY:
+                r = try_one(proc_addr(src_p), caller_ptr)
+            else:
+                r = try_async(caller_ptr)
+
+            if r == OK:
+                IPC_STATUS_ADD_CALL(caller_ptr, SENDA)
+                return receive_done
+
+        # Check caller queue.
+        # TODO: Check the possibility to use id() when variable address
+        # is used in minix code
+
+        '''This xpp, is a list implementation with a null terminator,
+        the '\0' character, many points in system use this, but
+        depending on the situation it'll be tweaked in a different way.
+        This message communication interface it's very probably to be
+        replaced for a class with a dict of lists, where each entry of
+        dict is a proc_id and each entry of list is a message for the
+        owner process for that key in dict, this only can be solved
+        when the code is almost finished, to realize what can be
+        replaced or not'''
+
+        # FIXME: Implement the class described above for use in the
+        # commented code below
+        """
+        xpp = caller_ptr['p_caller_q']
+
+        while xpp:
+
+            sender = xpp
+            if src_e == ANY or src_p == proc_nr(sender):
+                assert(not RTS_ISSET(sender, RTS_SLOT_FREE))
+                assert(not RTS_ISSET(sender, RTS_NO_ENDPOINT))
+
+                # Found acceptable message. Copy it and update status
+                assert(not(caller_ptr['p_misc_flags'] & MF_DELIVERMSG))
+                caller_ptr['p_delivermsg'] = sender['p_sendmsg']
+                caller_ptr['p_delivermsg']['m_source'] = sender['p_endpoint']
+                caller_ptr['p_misc_flags'] |= MF_DELIVERMSG
+                RTS_UNSET(sender, RTS_SENDING)
+
+                if sender['p_misc_flags'] & MF_SENDING_FROM_KERNEL:
+                    call = SENDREC
+
+                else:
+                    call = SEND
+
+                IPC_STATUS_ADD_CALL(caller_ptr, call)
+
+                # MXCM #
+                '''if the message is originally from the kernel on
+                behalf of this process, we must send the status
+                flags accordingly'''
+
+                if sender['p_misc_flags'] & MF_SENDING_FROM_KERNEL:
+                    IPC_STATUS_ADD_FLAGS(caller_ptr, IPC_FLG_MSG_FROM_KERNEL)
+                    # we can clean the flag now, not need anymore
+                    sender['p_misc_flags'] &= ~MF_SENDING_FROM_KERNEL
+
+                if sender['p_misc_flags'] & MF_SIG_DELAY:
+                    sig_delay_done(sender)
+
+                if DEBUG_IPC_HOOK:
+                    hook_ipc_msgrecv(caller_ptr['p_delivermsg'], xpp,
+                                     caller_ptr)
+
+                xpp = sender['p_q_link']
+                sender['p_q_link'] = None
+                return receive_done(caller_ptr)
+            xpp = sender['p_q_link']
+        """
+
+    # MXCM #
+    ''' No suitable message is available or the caller couldn't send in
+    SENDREC.Block the process trying to receive, unless the flags tell
+    otherwise.'''
+
+    if not(flags & NON_BLOCKING):
+        # Check for a possible deadlock before actually blocking.
+        if _deadlock(RECEIVE, caller_ptr, src_e):
+            return ELOCKED
+
+        caller_ptr['p_getfrom_e'] = src_e
+        RTS_SET(caller_tr, RTS_RECEIVING)
+        return OK
+    else:
+        return ENOTREADY
+
+    return receive_done(caller_ptr)
