@@ -140,5 +140,52 @@ def get_priv(rc,priv_id):
 
 	return OK
 
-def set_sendto_bit(rp,id):
-	''' 
+def set_sendto_bit(rp,_id):
+	''' Allow a process to send messages to the process(es) associated
+	with the system privilege structure with the given id.'''
+
+	''' Disallow the process from sending to a process privilege structure
+	with no associated process, and disallow the process from sending to
+	itself.'''
+	if id_to_nr(_id) == None or priv_id(rp) == _id:
+		unset_sys_bit(priv(rp)['s_ipc_to'], _id)
+		return
+
+	set_sys_bit(priv(rp)['s_ipc_to'],_id)
+
+	''' The process that this process can now send to, must be able to reply
+	(or	vice versa). Therefore, its send mask should be updated as well.
+	Ignore receivers that don't support traps other than RECEIVE, they can't
+	reply or send messages anyway.'''
+
+	if priv_addr(_id)['s_trap_mask'] & ~(1 <<  RECEIVE):
+		set_sys_bit(priv_addr(_id)['s_ipc_to'], priv_id(rp))
+
+def unset_sendto_bit(rp,_id):
+	''' Prevent a process from sending to another process. Retain the send
+	mask symmetry by also unsetting the bit for the other direction.'''
+	unset_sys_bit(priv(rp)['s_ipc_to'],_id)
+	unset_sys_bit(priv_addr(_id)['s_ipc_to'],priv_id(rp))
+
+def fill_sendto_mask(rp, _map):
+	for i in range(len(NR_SYS_PROCS)):
+		if get_sys_bit(_map, i):
+			set_sendto_bit(rp, i)
+		else:
+			unset_sendto_bit(rp, i)
+
+def send_sig(ep, sig_nr):
+	''' Notify a system process about a signal. This is straightforward. Simply
+	set the signal that is to be delivered in the pending signals map and 
+	send a notification with source SYSTEM. '''
+	if not isokendpt(ep,proc_nr) or isemptyn(proc_nr):
+		return EINVAL
+
+	rp = proc_addr(proc_nr)
+	priv = priv(rp)
+	if not priv: return ENOENT
+	sigaddset(priv['s_sig_pending'], sig_nr)
+	increase_proc_signals(rp)
+	mini_notify(proc_addr(SYSTEM), rp['p_endpoint'])
+
+	return OK
