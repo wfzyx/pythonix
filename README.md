@@ -44,7 +44,7 @@ FAQ
 **A**: Actually, isn't possible. All the kernel, user-space, and applications
 will be made in Python, but the bootloader and the lowest level will
 run over another future project in Clang with a implementation of PyPy 
-with a JIT compiler, which makes the system viable.
+with a JIT compiler, which makes the system viable. See [Pythonix Overview](docs/images/overview.png) for details.
 
 =====
 
