@@ -331,12 +331,12 @@ def _deadlock(function, cp, src_dst_e):
     pass
 
 
-def _has_pending(_map, src_p, asynm):
+def _has_pending(map_, src_p, asynm):
     # MXCM #
     # Check to see if there is a pending message from
     # the desired source available.
 
-    _id = NULL_PRIV_ID
+    id_ = NULL_PRIV_ID
 
     '''
     if CONFIG_SMP:
@@ -351,7 +351,7 @@ def _has_pending(_map, src_p, asynm):
     if src_p != ANY:
         src_id = nr_to_id(src_p)
 
-        if get_sys_bit(_map, src_id):
+        if get_sys_bit(map_, src_id):
             # This if does nothig while CONFIG_SMP is not implemented
             pass
             # TODO Implement SMP
@@ -362,7 +362,7 @@ def _has_pending(_map, src_p, asynm):
                 if asynm and RTS_ISSET(p, RTS_VMINHIBIT):
                     p['p_misc_flags'] |= MF_SENDA_VM_MISS
                 else:
-                    _id = src_id
+                    id_ = src_id
             '''
     else:
         # Find a source with a pending message
@@ -374,7 +374,7 @@ def _has_pending(_map, src_p, asynm):
                 '''
                 if CONFIG_SMP:
                     while src_id < NR_SYS_PROCS and aux:
-                        while not get_sys_bit(_map, src_id) and aux:
+                        while not get_sys_bit(map_, src_id) and aux:
                             if src_id == NR_SYS_PROCS:
                                 aux = False
                                 break
@@ -398,15 +398,15 @@ def _has_pending(_map, src_p, asynm):
                 if aux:
                     # TODO: Change this if to elif when CONFIG_SMP is
                     # implemented
-                    while not get_sys_bit(_map, src_id):
+                    while not get_sys_bit(map_, src_id):
                         src_id += 1
                     aux = False
                     break
 
         if src_id < NR_SYS_PROCS:
             # Founf one
-            _id = src_id
-    return _id
+            id_ = src_id
+    return id_
 
 
 def has_pending_notify(caller, src_p):
