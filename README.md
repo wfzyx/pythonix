@@ -19,6 +19,11 @@ Documentation and Resources
 * http://legacy.python.org/dev/peps/pep-0008/ # Style-Guide Python
 * http://wiki.osdev.org/Main_Page # wiki for helping in OS development
 * docs/TRANSLATION-GUIDE # Guide for C/Python translation
+
+Contact
+-------
+
+[Forum](http://ost.io/@vhpanisa/pythonix) or [E-mail](mailto:victor.panisa@gmail.com)
  
 ROADMAP
 -------
@@ -94,12 +99,6 @@ of Python, and where necessary implement own extensions
 **A**: The purpose of writing the OS in Python, and enables the ease of 
 maintenance is to avoid as much use any kind of dependencies and libraries 
 to non-essential to Python, allowing a clean and easy to understand code.
-
-=====
-
-**Q**: How can I contact the developers of Pythonix?
-
-**A**: In our [Forum](http://ost.io/@vhpanisa) or my personal [E-mail](mailto:victor.panisa@gmail.com)
 
 =====
 
