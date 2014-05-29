@@ -97,6 +97,12 @@ to non-essential to Python, allowing a clean and easy to understand code.
 
 =====
 
+**Q**: How can I contact the developers of Pythonix?
+
+**A**: In our [Forum](http://ost.io/@vhpanisa) or my personal [E-mail](mailto:victor.panisa@gmail.com)
+
+=====
+
 **Q**: Why not just quit?
 
 **A**: Because great guys already show some support, so the idea worth it
