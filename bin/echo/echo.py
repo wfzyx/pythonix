@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Echo program, print stuffs in stdout
 import sys
 

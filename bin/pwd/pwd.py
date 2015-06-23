@@ -1,5 +1,10 @@
-# PWD - Print Working Directory - prints global path to current directory
-# TODO: Remove use of 'os' module
+# PWD - Print Working Directory - prints global path to current 
+
+import sys
 import os
 
-print(os.getcwd())
+def main(argv):
+  print(os.getcwd())
+
+if __name__ == '__main__':
+  main(sys.argv)

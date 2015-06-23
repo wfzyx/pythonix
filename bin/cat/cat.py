@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 # TODO check include/define dependencies
 
 import sys
@@ -47,7 +49,7 @@ def main(argv):
         try:
             # Behaves like CAT without files #
             while True:
-                stdin_aux = input()
+                stdin_aux = raw_input()
                 print(stdin_aux)
         except KeyboardInterrupt:
             # Hide traceback from end-user # 
