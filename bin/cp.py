@@ -1,5 +1,4 @@
-# rm: simple program to delete files and directories
-# TODO: Remove use of 'os' module
+# cp: simple program to copy files and directories
 
 import sys
 import os
@@ -27,10 +26,10 @@ def main(argv):
     #                     help='Do not ask for confirmation before\
     #                           removing')
     parser.add_argument('-r', action='store_true',
-                        help='Remove recursively')
+    help='Remove recursively')
     # Same as -r #
     parser.add_argument('-R', action='store_true',
-                        help='Remove recursively')
+        help='Remove recursively')
 
     parser.add_argument('files', nargs=argparse.REMAINDER)
 
@@ -43,7 +42,7 @@ def main(argv):
     if len(argv.files) == 0:
         print('Usage: cp [OPTIONS] file1 file2')
 
-    copy(argv.files)
+        copy(argv.files)
 
-if __name__ == '__main__':
-    main(sys.argv)
+        if __name__ == '__main__':
+            main(sys.argv)
