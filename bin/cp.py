@@ -4,7 +4,7 @@ import sys
 import os
 import argparse
 
-def copy(files):
+def copy(origin, destination):
     with open(origin, 'rb') as in_file:
         with open(destination, 'wb') as out_file:
             data = in_file.read(1024)
@@ -33,16 +33,16 @@ def main(argv):
 
     parser.add_argument('files', nargs=argparse.REMAINDER)
 
-    # argv = parser.parse_args()
+    argv = parser.parse_args()
 
-    # # If -R is passed, then -r is set to True #
-    # if argv.R:
-    #     argv.r = True
+    # If -R is passed, then -r is set to True #
+    if argv.R:
+        argv.r = True
 
     if len(argv.files) == 0:
         print('Usage: cp [OPTIONS] file1 file2')
 
-        copy(argv.files)
+    copy(argv.files[0],argv.files[1])
 
-        if __name__ == '__main__':
-            main(sys.argv)
+if __name__ == '__main__':
+    main(sys.argv)

@@ -1,17 +1,17 @@
-# cd - Change Working Directory 
+# mkdir - Makes a Directory 
 
 import sys
 import os
 import argparse
 
-def cd(path):
-  os.chdir(path)
+def cd(directory):
+  os.mkdir(directory)
 
 def main(argv):
   parser = argparse.ArgumentParser()
-  parser.add_argument('path', nargs=argparse.REMAINDER)
+  parser.add_argument('directory', nargs=argparse.REMAINDER)
   argv = parser.parse_args()
-  cd(argv.path)
+  cd(argv.directory)
 	
 if __name__ == '__main__':
   main(sys.argv)
