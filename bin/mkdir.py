@@ -11,7 +11,7 @@ def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('directory', nargs=argparse.REMAINDER)
   argv = parser.parse_args()
-  cd(argv.directory)
+  cd(argv.directory[0])
 	
 if __name__ == '__main__':
   main(sys.argv)
