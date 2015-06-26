@@ -39,6 +39,12 @@ def remove(files, force=False, interactive=False, recursive=False):
                 os.rmdir(i)
             else:
                 os.rmdir(i)
+    else:
+	for i in files:
+          if os.path.isfile(i):
+            os.remove(i)
+          elif len(os.listdir(i) == 0):
+            os.rmdir(i)
 
 def main(argv):
 
