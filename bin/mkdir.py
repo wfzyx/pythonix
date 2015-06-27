@@ -8,6 +8,7 @@ def cd(directory):
   os.mkdir(directory)
 
 def main(argv):
+  # [-p] [-m mode]
   parser = argparse.ArgumentParser()
   parser.add_argument('directory', nargs=argparse.REMAINDER)
   argv = parser.parse_args()

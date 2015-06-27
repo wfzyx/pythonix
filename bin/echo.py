@@ -6,7 +6,6 @@ def main(argv):
   
     # TODO Find and implement setprogname,setlocale, probably in process part
     # check <sys.cdefs.h>
-  
     # setprogname(argv[0])
     # setlocale(LC_ALL, '')
     
@@ -27,7 +26,6 @@ def main(argv):
         exit(1)
         
     exit(0)
-
 
 if __name__ == '__main__':
     main(sys.argv)

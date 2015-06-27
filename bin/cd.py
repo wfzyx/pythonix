@@ -5,9 +5,7 @@ import os
 import argparse
 
 def cd(path):
-  print('going to:', path)
   os.chdir(path)
-  print('debug:', os.getcwd())
 
 def main(argv):
   parser = argparse.ArgumentParser()
