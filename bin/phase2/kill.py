@@ -4,7 +4,7 @@ import sys
 import os
 import argparse
 
-def changep(pid, sig=15, signame=False, exstatus=False):
+def killpid(pid, sig=15, signame=False, exstatus=False):
     if signame:
         pass
     if exstatus:
