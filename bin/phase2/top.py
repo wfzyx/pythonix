@@ -4,12 +4,13 @@ import sys
 import os
 
 def _top():
-    print("process!!!!!!!!!")
+    
 
 def loopTop():
     op = ''
-    while(input() != 'q'):
+    while(op != 'q'):
         _top()
+	op = raw_input()
 
 def main(argv):
     loopTop()
