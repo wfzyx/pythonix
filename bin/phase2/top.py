@@ -2,9 +2,9 @@
 
 import sys
 import os
+import tty
 
 def _getch():
-    import termios, tty
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:

@@ -23,14 +23,11 @@ def main(argv):
 
     argv = parser.parse_args()
 
-    if argv.R:
-        argv.r = True
-
     if len(argv.args) == 0:
         print('Usage: kill [-sl] pid')
         exit(0)
 
-    changep(argv.args[-1], signame=argv.s, exstatus=argv.l)
+    killpid(int(argv.args[-1]), signame=argv.s, exstatus=argv.l)
 
 if __name__ == '__main__':
     main(sys.argv)
