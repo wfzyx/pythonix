@@ -4,7 +4,9 @@ import sys
 import os
 
 def _top():
-    
+    for proc in os.listdir('/proc'):
+        data = open('/proc/{}/psinfo', 'rb').read()
+        print(data)
 
 def loopTop():
     op = ''
