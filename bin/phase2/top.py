@@ -29,11 +29,10 @@ def _top():
           running += 1
 
     print('{0} processes: {1} running, {2} sleeping'.format(len(procs),running , len(procs)-running))
-    print('somethinbg about memory')
+    print('something about memory')
     print('cpu line 1')
     print('cpu line 2')
-    print()        
-    print('PID|UID|PRI|NICE|SIZE|STATE|TIME|CPU|COMMAND')
+    print('{0: <5} {1: >8} {2: <3} {3: <7} {4: >5} {5: <6} {6: <7} {7: >7}'.format('PID', 'USERNAME', 'PRI', 'NICE', 'SIZE', 'STATE', 'TIME', 'CPU COMMAND'))
 
     for proc,i in zip(topdata,range(7,rows)):
         for txt in txtheader:
