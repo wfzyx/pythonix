@@ -5,6 +5,7 @@ import sys
 import os
 
 def _top():
+    rows, columns = os.popen('stty size', 'r').read().split()
     headers = ['psi_v','type','endpoint','name','state','blocked','priority',
         'utime','stime','execycleshi','execycleslo', 'tmemory', 'cmemory', 
         'smemory', 'sleep', 'parentpid', 'realuid', 'effectiveuid', 'procgrp',
@@ -32,10 +33,9 @@ def _top():
     print('cpu line 1')
     print('cpu line 2')
     print()        
-
     print('PID|UID|PRI|NICE|SIZE|STATE|TIME|CPU|COMMAND')
-    print('-'*56)
-    for proc in topdata:
+
+    for proc,i in zip(topdata,range(6,rows)):
         for txt in txtheader:
             print('{:}'.format(proc[txt]), end='|')
         print()
