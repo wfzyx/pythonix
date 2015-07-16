@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # chown: change user and group owner of given path
 
 import sys

@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # PWD - Print Working Directory - prints global path to current 
 
 import sys

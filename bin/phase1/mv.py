@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # mv: simple program to rename or move files and directories
 
 import sys

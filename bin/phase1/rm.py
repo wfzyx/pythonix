@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # rm: simple program to delete files and directories
 # TODO: Remove use of 'os' module
 

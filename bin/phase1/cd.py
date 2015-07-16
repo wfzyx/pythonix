@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # cd - Change Working Directory 
 
 import sys

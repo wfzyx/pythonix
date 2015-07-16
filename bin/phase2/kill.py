@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # kill: send given signal to a specific pdi
 
 import sys

@@ -1,3 +1,4 @@
+#!/usr/pkg/bin/python2.7
 # cp: simple program to copy files and directories
 
 import sys
