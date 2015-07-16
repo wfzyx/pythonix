@@ -12,8 +12,7 @@ def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
         'nicevalue', 'vfsblock', 'blockproc', 'ctrltty', 'kipchi', 'kipclo', 
         'kcallhi', 'kcalllo']
 
-    txtheader = ['pid','realuid','priority','nicevalue','tmemory','state',
-      'utime','execcycleslo','name']
+    txtheader = ['pid','ctrltty','utime','name']
 
     procs = [id for id in os.listdir('/proc') if id.isdigit()]
     topdata = []    
@@ -27,41 +26,25 @@ def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
         if procdata['state'] == 'R':
           running += 1
           
-    print('{0: >5} {1: <8} {2: >3} {3: >4} {4: >5} {5: >5} {6: >6} {7: >7} {8: >7}'.format('PID', 'USERNAME', 'PRI', 'NICE', 'SIZE', 'STATE', 'TIME', 'CPU', 'COMMAND'))
+    print('{0: >5} {1: >3} {2: >5} {3}'.format('PID', 'TTY', 'TIME', 'CMD'))
 
-    for proc,i in zip(topdata,range(8,rows)):
+    for proc in topdata:
+        if not all:
+          if tty and proc['ctrltty'] == '0': continue
+          elif notty and proc['ctrltty'] != '0': continue
         for txt in txtheader:
             if txt == 'pid':
               s = '{0: >5}'
               value = proc[txt]
-            elif txt == 'realuid':
-              s = '{0: <8}'
-              value = users[proc[txt]]
-            elif txt == 'priority':
+            elif txt == 'ctrltty':
               s = '{0: >3}'
               value = proc[txt]
-            elif txt == 'nicevalue':
-              s = '{0: >4}'
-              value = proc[txt]
-            elif txt == 'tmemory':
-              s = '{0: >5}'
-              value = str(int(proc[txt])/1024)+'k'
-            elif txt == 'state':
-              s = '{0: >5}'
-              value = 'RUN' if proc[txt] == 'R' else ''
             elif txt == 'utime':
-              s = '{0: >6}'
-              secs = int(proc[txt])
-              mins = secs/60
-              if mins >= 60:
-                hours = mins//60
-                mins = mins%60
-              else:
-                hours = 0
-              value = str(hours)+':'+'{0:0>2}'.format(str(mins))
-            elif txt == 'execcycleslo':
-              s = '{0: >6}%'
-              value = proc[txt] if txt in proc else '0.00'
+              s = '{0: >5}'
+              value = proc[txt]
+            elif txt == 'name':
+              s = '{}'
+              value = proc[txt]
             else:
               s = '{0}'
               value = proc[txt]
