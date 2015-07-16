@@ -37,7 +37,8 @@ def listprocs(tty=True, longformat=False, notty=False, endpoint=False, all=False
               s = '{0: >5}'
               if endpoint:
                 value = proc['endpoint']
-              value = proc[txt]
+              else:
+                value = proc[txt]
             elif txt == 'ctrltty':
               s = '{0: >3}'
               value = proc[txt]
