@@ -5,7 +5,7 @@ import sys
 import os
 import argparse
 
-def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
+def listprocs(tty=True, longformat=False, notty=False, endpoint=False, all=False):
     headers = ['psi_v','type','endpoint','name','state','blocked','priority',
         'utime','stime','execycleshi','execycleslo', 'tmemory', 'cmemory', 
         'smemory', 'sleep', 'parentpid', 'realuid', 'effectiveuid', 'procgrp',
@@ -30,8 +30,8 @@ def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
 
     for proc in topdata:
         if not all:
-          if tty and proc['ctrltty'] == '0': continue
-          elif notty and proc['ctrltty'] != '0': continue
+          if tty and not notty and proc['ctrltty'] == '0': continue
+          elif notty and not tty and proc['ctrltty'] != '0': continue
         for txt in txtheader:
             if txt == 'pid':
               s = '{0: >5}'
@@ -41,7 +41,14 @@ def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
               value = proc[txt]
             elif txt == 'utime':
               s = '{0: >5}'
-              value = proc[txt]
+              secs = int(proc[txt])
+              mins = secs/60
+              if mins >= 60:
+                hours = mins//60
+                mins = mins%60
+              else:
+                hours = 0
+              value = str(hours)+':'+'{0:0>2}'.format(str(mins))
             elif txt == 'name':
               s = '{}'
               value = proc[txt]
@@ -71,7 +78,7 @@ def main(argv):
     argv = parser.parse_args()
 
     if argv.a or argv.e or argv.E or argv.f or argv.l or argv.x:
-      listprocs(tty=argv.a, longv=(argv.f or argv.l), notty=argv.x, endpoint=argv.E, all=argv.e)
+      listprocs(tty=argv.a, longformat=(argv.f or argv.l), notty=argv.x, endpoint=argv.E, all=argv.e)
     else:
       listprocs()
 
