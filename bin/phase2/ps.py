@@ -35,6 +35,8 @@ def listprocs(tty=True, longformat=False, notty=False, endpoint=False, all=False
         for txt in txtheader:
             if txt == 'pid':
               s = '{0: >5}'
+              if endpoint:
+                value = proc['endpoint']
               value = proc[txt]
             elif txt == 'ctrltty':
               s = '{0: >3}'
