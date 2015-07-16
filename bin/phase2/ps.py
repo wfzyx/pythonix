@@ -49,9 +49,6 @@ def listprocs(tty=True, longformat=False, notty=False, endpoint=False, all=False
               else:
                 hours = 0
               value = str(hours)+':'+'{0:0>2}'.format(str(mins))
-            elif txt == 'name':
-              s = '{}'
-              value = proc[txt]
             else:
               s = '{0}'
               value = proc[txt]
