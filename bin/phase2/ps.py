@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import sys
 import os
+import argparse
 
 def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
     headers = ['psi_v','type','endpoint','name','state','blocked','priority',
@@ -69,6 +70,7 @@ def listprocs(tty=True, longv=False, notty=False, endpoint=False, all=False):
 
 def main(argv):
     parser = argparse.ArgumentParser()
+
     parser.add_argument('-a', action='store_true',
         help='Show only process with an attached tty')
     parser.add_argument('-e', action='store_true',
@@ -85,7 +87,7 @@ def main(argv):
 
     argv = parser.parse_args()
 
-    if arg.a or argv.e or argv.E or argv.f or argv.l or argv.x:
+    if argv.a or argv.e or argv.E or argv.f or argv.l or argv.x:
       listprocs(tty=argv.a, longv=(argv.f or argv.l), notty=argv.x, endpoint=argv.E, all=argv.e)
     else:
       listprocs()
