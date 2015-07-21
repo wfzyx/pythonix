@@ -4,13 +4,21 @@
 import sys
 import os
 import argparse
+import signal
 
-def killpid(pid, sig=15, signame=False, exstatus=False):
+def killpid(pid, signame=False, signal='TERM', exitstatus=False):
     if signame:
-        pass
+        try:
+          s = eval('signal.SIG'+signal.upper())
+        except AttributeError:
+          print('Invalid signal')
+          return
+    else:
+        s = 15
     if exstatus:
         pass
-    os.kill(pid, sig)
+        pass
+    os.kill(pid, s)
 
 def main(argv):
 
@@ -24,11 +32,16 @@ def main(argv):
 
     argv = parser.parse_args()
 
+    argv.signal = 'TERM'
+    if argv.s:
+        argv.signal = argv.args[0]
+        argv.args = args.args[1:]
+
     if len(argv.args) == 0:
         print('Usage: kill [-sl] pid')
         exit(0)
 
-    killpid(int(argv.args[-1]), signame=argv.s, exstatus=argv.l)
+    killpid(int(argv.args[0]), signame=argv.s, signal=argv.signal, exitstatus=argv.l)
 
 if __name__ == '__main__':
     main(sys.argv)

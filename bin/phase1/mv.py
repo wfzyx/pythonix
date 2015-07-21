@@ -10,15 +10,17 @@ def _move(o,d):
 
 def move(origin, destination, interactive=False, force=False):
     if interactive:
-        pass
+        if os.path.isfile(destination):
+            op = input('Replace {0}?[y/n]: ')
+            if op.lower() == 'y':
+                _move(origin, destination)
     elif force:
-        pass
+        _move(origin, destination)
     else:
         _move(origin, destination)
 
 def main(argv):
     parser = argparse.ArgumentParser()
-    # Add options [-smvx] #
     parser.add_argument('-i', action='store_true',
         help='Ask for confirmation before removing')
     parser.add_argument('-f', action='store_true',

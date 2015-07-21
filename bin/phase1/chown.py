@@ -13,6 +13,10 @@ def changeo(path, mod, recursive=False):
 
     if recursive:
         pass
+        pass
+        pass
+        pass
+        pass
     else:
         os.chown(path,int(u),int(g))
 

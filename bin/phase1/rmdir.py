@@ -14,10 +14,14 @@ def _removedir(d):
 
 def removedir(dirs, pathlike=False):
     for i in dirs:
-        if pathlike:        
-            pass
-        else:
-            _removedir(i)
+      if pathlike:        
+        for x in os.listdir(i):
+          if os.path.isdir(os.path.abspath(x)):
+            removedir(x, pathlike=pathlike)
+            if len(os.listdir(x)) == 0:
+              _removedir(x)
+      else:
+        _removedir(i)
         
 def main(argv):
 
@@ -34,7 +38,7 @@ def main(argv):
     if len(argv.dirs) == 0:
         print('Usage: rmdir [-p] directories')
 
-    removedir(argv.dirs, argv.p)
+    removedir(argv.dirs, pathlike=argv.p)
 
 if __name__ == '__main__':
     main(sys.argv)
