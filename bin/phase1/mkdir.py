@@ -7,7 +7,6 @@ import argparse
 
 def _cd(directory, path=False, mod='777'):
   mod = int(mod,8)
-  print(mod)
   if path:
     os.makedirs(directory, mod)
   else:
