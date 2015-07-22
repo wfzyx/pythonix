@@ -26,6 +26,8 @@ def copy(origin, destination, recursive=False, interactive=False, force=False):
             answer = input('cp: overwrite file "{0}" [Y/N]? '.format(destination))
             if answer.upper() == 'Y':
                 _copy(origin, destination)
+    else:
+        _copy(origin, destination)
 
 def main(argv):
 

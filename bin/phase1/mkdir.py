@@ -5,28 +5,29 @@ import sys
 import os
 import argparse
 
-def _cd(directory, path=False, mode=777):
-  mode = int(mode,8)
+def _cd(directory, path=False, mod='777'):
+  mod = int(mod,8)
+  print(mod)
   if path:
-    os.makedirs(directory, mode=mode)
+    os.makedirs(directory, mod)
   else:
-    os.mkdir(directory, mode=mode)
+    os.mkdir(directory, mod)
 
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('-p', action='store_true',
         help='Creates full path')
-    parser.add_argument('-m', action='store_true',
+  parser.add_argument('-m', action='store_true',
         help='Give a specific mode')
   parser.add_argument('directory', nargs=argparse.REMAINDER)
   argv = parser.parse_args()
 
-  argv.mode = 777
+  argv.mod = '777'
   if argv.m:
-    argv.mode = argv.directory[0]
+    argv.mod = argv.directory[0]
     argv.directory = argv.directory[1:]
 
-  _cd(argv.directory[0], path=argv.p, mode=argv.mode)
+  _cd(argv.directory[0], path=argv.p, mod=argv.mod)
 	
 if __name__ == '__main__':
   main(sys.argv)

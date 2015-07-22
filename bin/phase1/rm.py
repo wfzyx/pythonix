@@ -19,7 +19,7 @@ def _remF(file, verbose=False, scramble=False):
       i = 2
       while sys.getsizeof(f.read()) <= s and i < s:
         f.seek(i)
-        f.write(str.encode(str(hex(random.randint(0,255))))
+        f.write(str.encode(str(hex(random.randint(0,255)))))
         i += 1
   os.remove(file)
 

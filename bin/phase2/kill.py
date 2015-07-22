@@ -15,7 +15,7 @@ def killpid(pid, signame=False, signal='TERM', exitstatus=False):
           return
     else:
         s = 15
-    if exstatus:
+    if exitstatus:
         pass
         pass
     os.kill(pid, s)
