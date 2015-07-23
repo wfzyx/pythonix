@@ -1,6 +1,6 @@
 #!/usr/pkg/bin/python2.7
 from __future__ import print_function
-# find: find files and directories
+# grep: serach for string patterns in files
 
 import sys
 import os
