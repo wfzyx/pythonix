@@ -14,6 +14,7 @@ def _fg(file, pattern, ops):
     for i in range(z):
       line = text[i]
       result = pattern.match(line.strip())
+      if not result: result = (ops.pattern in line.strip())
       if result:
         if ops.A:
           if i < ops.A_num:
@@ -30,7 +31,7 @@ def _fg(file, pattern, ops):
           print(''.join(text[i+1:i+j+1]), end='')
 
 def _grep(args):
-  pattern = re.compile(args.pattern if not ops.i else args.pattern.lower())
+  pattern = re.compile(args.pattern if not args.i else args.pattern.lower())
   for file in args.files:
     _fg(file, pattern, args)
 
