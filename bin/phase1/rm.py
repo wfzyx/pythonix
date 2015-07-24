@@ -5,22 +5,22 @@
 import sys
 import os
 import argparse
-import random
+#import random
 
 def _remF(file, verbose=False, scramble=False):
   if verbose:
     print(os.path.abspath(file))
-  if scramble:
-    with open(file, 'rb+') as f:
-      s = sys.getsizeof(f.read())
-      f.seek(0)
-      f.write(b'0xff')
-      f.write(b'0x00')
-      i = 2
-      while sys.getsizeof(f.read()) <= s and i < s:
-        f.seek(i)
-        f.write(str.encode(str(hex(random.randint(0,255)))))
-        i += 1
+#  if scramble:
+#    with open(file, 'rb+') as f:
+#      s = sys.getsizeof(f.read())
+#      f.seek(0)
+#      f.write(b'0xff')
+#      f.write(b'0x00')
+#      i = 2
+#      while sys.getsizeof(f.read()) <= s and i < s:
+#        f.seek(i)
+#        f.write(str.encode(str(hex(random.randint(0,255)))))
+#        i += 1
   os.remove(file)
 
 def _remD(dir, verbose=False):
