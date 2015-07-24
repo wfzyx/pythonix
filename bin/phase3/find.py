@@ -13,10 +13,10 @@ def _find(s=None, root=None):
   l = os.listdir(root)
   for x in l:
     newroot = root+x+'/'
+    fulls = os.path.abspath(newroot)
     if os.path.isdir(newroot):
       _find(s=s, root=newroot)
-    fulls = os.path.abspath(newroot)
-    if fulls.endswith(s):
+    if x == s:
       print(fulls)
 
 
